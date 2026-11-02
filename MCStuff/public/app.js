@@ -31,11 +31,9 @@ const scrim = document.querySelector('#scrim');
 const mobileQuery = window.matchMedia('(max-width: 760px)');
 let currentPage = null;
 let pageAnimations = [];
-let themeTransition = null;
-let themeWaves = [];
-let themeRequest = 0;
 let selectedTheme = null;
-let requestedTheme = null;
+let audioContext = null;
+let soundRequest = 0;
 
 function getPage() {
   const key = window.location.hash.slice(1);
@@ -52,7 +50,6 @@ function syncIndicator() {
 
 function setMenu(open, restoreFocus = false) {
   const expanded = open && mobileQuery.matches;
-  if (!expanded) cancelThemeMotion();
   document.body.classList.toggle('menu-open', expanded);
   menuToggle.setAttribute('aria-expanded', String(expanded));
   menuToggle.setAttribute('aria-label', expanded ? 'Close menu' : 'Open menu');
@@ -68,12 +65,6 @@ function cancelPageAnimations() {
   pageAnimations.forEach(animation => animation.cancel());
   pageAnimations = [];
   stage.querySelectorAll('.page-leaving').forEach(view => view.remove());
-}
-
-function cancelThemeMotion() {
-  themeTransition?.skipTransition();
-  themeWaves.forEach(animation => animation.cancel());
-  themeWaves = [];
 }
 
 function showPage(page, previous) {
@@ -112,7 +103,6 @@ function render(moveFocus = false) {
   const page = getPage();
   const previous = currentPage;
   if (page !== previous) {
-    cancelThemeMotion();
     currentPage = page;
     showPage(page, previous);
     navLinks.forEach(link => {
@@ -144,61 +134,44 @@ function applyTheme(theme, persist = true) {
   }
 }
 
-async function selectTheme(button, event) {
-  const theme = button.dataset.themeOption;
-  if (theme === requestedTheme) return;
-  requestedTheme = theme;
-  const request = ++themeRequest;
-  cancelPageAnimations();
-  navigation.classList.add('nav-snap');
-  void indicator.offsetHeight;
-  navigation.classList.remove('nav-snap');
-  cancelThemeMotion();
-  root.classList.remove('theme-wave');
-  if (typeof document.startViewTransition !== 'function') {
-    applyTheme(theme);
-    return;
-  }
-
-  const rect = button.getBoundingClientRect();
-  const x = event.detail ? event.clientX : rect.left + rect.width / 2;
-  const y = event.detail ? event.clientY : rect.top + rect.height / 2;
-  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-  const parts = [
-    { name: 'theme-brand', element: document.querySelector('.brand-mark') },
-    { name: 'theme-nav', element: navigation.querySelector('.active .nav-content') },
-  ].filter(part => part.element).map(part => ({ ...part, rect: part.element.getBoundingClientRect() }));
-  let transition;
+async function playThemeSound() {
+  const request = ++soundRequest;
   try {
-    root.classList.add('theme-wave');
-    transition = document.startViewTransition(() => {
-      if (request === themeRequest) applyTheme(theme);
-    });
-    themeTransition = transition;
-    await transition.ready;
-    if (request !== themeRequest) return;
-    themeWaves = parts.map(part => root.animate({ clipPath: [
-      `circle(0px at ${x - part.rect.left}px ${y - part.rect.top}px)`,
-      `circle(${radius}px at ${x - part.rect.left}px ${y - part.rect.top}px)`,
-    ] }, {
-      duration: 680,
-      easing: 'cubic-bezier(.45,0,.25,1)',
-      pseudoElement: `::view-transition-new(${part.name})`,
-    }));
-    await Promise.allSettled([...themeWaves.map(animation => animation.finished), transition.finished]);
-  } catch {
-    transition?.skipTransition();
-    if (request === themeRequest) applyTheme(theme);
-  } finally {
-    if (request === themeRequest) {
-      root.classList.remove('theme-wave');
-      themeTransition = null;
-      themeWaves = [];
+    if (typeof window.AudioContext !== 'function') return;
+    if (!audioContext || audioContext.state === 'closed') {
+      audioContext = new window.AudioContext();
     }
-  }
+    if (audioContext.state !== 'running') await audioContext.resume();
+    if (request !== soundRequest || audioContext.state !== 'running') return;
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const now = audioContext.currentTime;
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(760, now);
+    oscillator.frequency.exponentialRampToValueAtTime(580, now + 0.055);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.025, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.addEventListener('ended', () => {
+      oscillator.disconnect();
+      gain.disconnect();
+    }, { once: true });
+    oscillator.start(now);
+    oscillator.stop(now + 0.07);
+  } catch {}
 }
 
-themeButtons.forEach(button => button.addEventListener('click', event => selectTheme(button, event)));
+function selectTheme(button) {
+  const theme = button.dataset.themeOption;
+  if (theme === selectedTheme) return;
+  applyTheme(theme);
+  void playThemeSound();
+}
+
+themeButtons.forEach(button => button.addEventListener('click', () => selectTheme(button)));
 menuToggle.addEventListener('click', () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true', true));
 scrim.addEventListener('click', () => setMenu(false, true));
 document.querySelector('.skip-link').addEventListener('click', event => {
@@ -230,5 +203,4 @@ document.addEventListener('keydown', event => {
 }));
 
 applyTheme(root.dataset.theme, false);
-requestedTheme = selectedTheme;
 render();
