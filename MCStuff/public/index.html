@@ -1,11 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="green">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101113">
     <meta name="description" content="MCStuff — a workspace for Minecraft packs, resources, and tools.">
-    <title>MCStuff — Overview</title>
+    <title>MCStuff</title>
+    <script>
+      try {
+        const theme = localStorage.getItem('mcstuff-theme');
+        if (['green', 'blue', 'purple', 'amber', 'rose'].includes(theme)) document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/styles.css">
     <script type="module" src="/app.js"></script>
@@ -14,23 +20,30 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <button class="scrim" id="scrim" aria-label="Close menu" tabindex="-1" hidden></button>
     <aside class="sidebar" id="sidebar" aria-label="Sidebar">
-      <a class="brand" href="#overview" aria-label="MCStuff — home">
-        <img src="/favicon.svg" width="36" height="36" alt="">
+      <a class="brand" href="#" data-home-link aria-label="MCStuff — home">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9"/><path d="m20 8 12 7-12 7-12-7 12-7Zm-12 10 10.5 6.2V33L8 26.8V18Zm24 0-10.5 6.2V33L32 26.8V18Z"/></svg>
         <span>MC<span class="brand-light">Stuff</span></span>
       </a>
       <nav class="navigation" aria-label="Main navigation">
-        <a class="nav-link active" href="#overview" data-page="overview" aria-current="page"><span data-icon="overview"></span><span>Overview</span></a>
-        <a class="nav-link" href="#builder" data-page="builder"><span data-icon="layers"></span><span>Pack Builder</span></a>
-        <a class="nav-link" href="#resources" data-page="resources"><span data-icon="box"></span><span>Resources</span></a>
-        <a class="nav-link" href="#tools" data-page="tools"><span data-icon="tools"></span><span>Tools</span></a>
+        <span class="nav-indicator" aria-hidden="true"></span>
+        <a class="nav-link" href="#builder" data-page="builder"><span class="nav-content"><span data-icon="layers"></span><span>Pack Builder</span></span></a>
+        <a class="nav-link" href="#resources" data-page="resources"><span class="nav-content"><span data-icon="box"></span><span>Resources</span></span></a>
+        <a class="nav-link" href="#tools" data-page="tools"><span class="nav-content"><span data-icon="tools"></span><span>Tools</span></span></a>
       </nav>
+      <div class="theme-picker" role="group" aria-label="Accent color">
+        <button type="button" class="theme-button" data-theme-option="green" aria-label="Green accent" title="Green" aria-pressed="true"><span class="theme-swatch"></span></button>
+        <button type="button" class="theme-button" data-theme-option="blue" aria-label="Blue accent" title="Blue" aria-pressed="false"><span class="theme-swatch"></span></button>
+        <button type="button" class="theme-button" data-theme-option="purple" aria-label="Purple accent" title="Purple" aria-pressed="false"><span class="theme-swatch"></span></button>
+        <button type="button" class="theme-button" data-theme-option="amber" aria-label="Amber accent" title="Amber" aria-pressed="false"><span class="theme-swatch"></span></button>
+        <button type="button" class="theme-button" data-theme-option="rose" aria-label="Rose accent" title="Rose" aria-pressed="false"><span class="theme-swatch"></span></button>
+      </div>
     </aside>
     <div class="workspace">
       <header class="mobile-header">
         <button id="menu-toggle" class="icon-button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button>
-        <a class="mobile-brand" href="#overview">MCStuff</a>
+        <a class="mobile-brand" href="#" data-home-link>MCStuff</a>
       </header>
-      <main id="main" tabindex="-1"></main>
+      <main id="main" tabindex="-1"><div class="page-stage" id="page-stage"></div></main>
     </div>
     <noscript><p class="noscript">Enable JavaScript to navigate MCStuff.</p></noscript>
   </body>
