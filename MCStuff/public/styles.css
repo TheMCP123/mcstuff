@@ -130,7 +130,3 @@ h1 { margin: 0; padding-bottom: 26px; border-bottom: 1px solid var(--line); font
   main { padding-inline: 18px; }
   h1 { font-size: 24px; }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
-}

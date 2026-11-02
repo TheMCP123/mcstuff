@@ -29,7 +29,6 @@ const themeNames = new Set(themeButtons.map(button => button.dataset.themeOption
 const menuToggle = document.querySelector('#menu-toggle');
 const scrim = document.querySelector('#scrim');
 const mobileQuery = window.matchMedia('(max-width: 760px)');
-const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let currentPage = null;
 let pageAnimations = [];
 let themeTransition = null;
@@ -85,7 +84,7 @@ function showPage(page, previous) {
   const { title, emptyText } = pages[page];
   incoming.innerHTML = `<h1>${title}</h1><p class="empty-state">${emptyText}</p>`;
 
-  if (!outgoing || motionQuery.matches || typeof incoming.animate !== 'function') {
+  if (!outgoing || typeof incoming.animate !== 'function') {
     stage.replaceChildren(incoming);
     return;
   }
@@ -156,7 +155,7 @@ async function selectTheme(button, event) {
   navigation.classList.remove('nav-snap');
   cancelThemeMotion();
   root.classList.remove('theme-wave');
-  if (motionQuery.matches || typeof document.startViewTransition !== 'function') {
+  if (typeof document.startViewTransition !== 'function') {
     applyTheme(theme);
     return;
   }
@@ -210,11 +209,6 @@ document.querySelector('.skip-link').addEventListener('click', event => {
 mobileQuery.addEventListener('change', () => { setMenu(false); syncIndicator(); });
 window.addEventListener('resize', syncIndicator);
 window.addEventListener('hashchange', () => render(true));
-motionQuery.addEventListener('change', () => {
-  if (!motionQuery.matches) return;
-  cancelPageAnimations();
-  cancelThemeMotion();
-});
 
 document.addEventListener('keydown', event => {
   if (!document.body.classList.contains('menu-open')) return;
