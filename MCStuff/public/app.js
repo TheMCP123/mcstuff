@@ -11,10 +11,10 @@ for (const element of document.querySelectorAll('[data-icon]')) {
 }
 
 const pages = {
-  overview: { title: 'Обзор', emptyText: 'Инструменты пока не добавлены.' },
-  builder: { title: 'Билдер сборок', emptyText: 'Раздел пока пуст.' },
-  resources: { title: 'Ресурсы', emptyText: 'Раздел пока пуст.' },
-  tools: { title: 'Инструменты', emptyText: 'Раздел пока пуст.' },
+  overview: { title: 'Overview', emptyText: 'No tools added yet.' },
+  builder: { title: 'Pack Builder', emptyText: 'This section is empty.' },
+  resources: { title: 'Resources', emptyText: 'This section is empty.' },
+  tools: { title: 'Tools', emptyText: 'This section is empty.' },
 };
 
 const main = document.querySelector('#main');
@@ -27,7 +27,7 @@ function setMenu(open, restoreFocus = false) {
   const expanded = open && mobileQuery.matches;
   document.body.classList.toggle('menu-open', expanded);
   menuToggle.setAttribute('aria-expanded', String(expanded));
-  menuToggle.setAttribute('aria-label', expanded ? 'Закрыть меню' : 'Открыть меню');
+  menuToggle.setAttribute('aria-label', expanded ? 'Close menu' : 'Open menu');
   sidebar.inert = mobileQuery.matches && !expanded;
   scrim.hidden = !expanded;
   if (expanded) sidebar.querySelector('[aria-current="page"]').focus();

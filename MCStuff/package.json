@@ -4,7 +4,7 @@
   "license": "MIT",
   "private": true,
   "type": "module",
-  "description": "MCStuff — сборки, ресурсы и инструменты для Minecraft.",
+  "description": "MCStuff — Minecraft packs, resources, and tools.",
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "node scripts/dev.mjs",

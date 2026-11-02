@@ -1,37 +1,37 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101113">
-    <meta name="description" content="MCStuff — рабочее пространство для сборок, ресурсов и инструментов Minecraft.">
-    <title>MCStuff — Обзор</title>
+    <meta name="description" content="MCStuff — a workspace for Minecraft packs, resources, and tools.">
+    <title>MCStuff — Overview</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/styles.css">
     <script type="module" src="/app.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">К содержимому</a>
-    <button class="scrim" id="scrim" aria-label="Закрыть меню" tabindex="-1" hidden></button>
-    <aside class="sidebar" id="sidebar" aria-label="Боковое меню">
-      <a class="brand" href="#overview" aria-label="MCStuff — главная">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <button class="scrim" id="scrim" aria-label="Close menu" tabindex="-1" hidden></button>
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+      <a class="brand" href="#overview" aria-label="MCStuff — home">
         <img src="/favicon.svg" width="36" height="36" alt="">
         <span>MC<span class="brand-light">Stuff</span></span>
       </a>
-      <nav class="navigation" aria-label="Основная навигация">
-        <a class="nav-link active" href="#overview" data-page="overview" aria-current="page"><span data-icon="overview"></span><span>Обзор</span></a>
-        <a class="nav-link" href="#builder" data-page="builder"><span data-icon="layers"></span><span>Билдер сборок</span></a>
-        <a class="nav-link" href="#resources" data-page="resources"><span data-icon="box"></span><span>Ресурсы</span></a>
-        <a class="nav-link" href="#tools" data-page="tools"><span data-icon="tools"></span><span>Инструменты</span></a>
+      <nav class="navigation" aria-label="Main navigation">
+        <a class="nav-link active" href="#overview" data-page="overview" aria-current="page"><span data-icon="overview"></span><span>Overview</span></a>
+        <a class="nav-link" href="#builder" data-page="builder"><span data-icon="layers"></span><span>Pack Builder</span></a>
+        <a class="nav-link" href="#resources" data-page="resources"><span data-icon="box"></span><span>Resources</span></a>
+        <a class="nav-link" href="#tools" data-page="tools"><span data-icon="tools"></span><span>Tools</span></a>
       </nav>
     </aside>
     <div class="workspace">
       <header class="mobile-header">
-        <button id="menu-toggle" class="icon-button" aria-label="Открыть меню" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button>
+        <button id="menu-toggle" class="icon-button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button>
         <a class="mobile-brand" href="#overview">MCStuff</a>
       </header>
       <main id="main" tabindex="-1"></main>
     </div>
-    <noscript><p class="noscript">Для навигации по MCStuff включите JavaScript в браузере.</p></noscript>
+    <noscript><p class="noscript">Enable JavaScript to navigate MCStuff.</p></noscript>
   </body>
 </html>
