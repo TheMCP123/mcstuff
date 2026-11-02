@@ -3,7 +3,7 @@
 ## Первая загрузка в GitHub — 2026-11-01
 
 - По явной команде пользователя подключён репозиторий `TheMCP123/mcstuff`, ветка `main`; сохранён начальный коммит владельца с MIT и автором MCP.
-- Подготовлена первая загрузка очищенного layout в папке `MCStuff`. Root directory для Workers Builds — `MCStuff`.
+- Первая версия очищенного layout в папке `MCStuff` загружена в `main` коммитом `49e54f7`. Root directory для Workers Builds — `MCStuff`.
 - Обновлён корневой README с локальным запуском, настройками Workers и ссылкой на MIT; в `package.json` добавлено `license: MIT`.
 - Подключение и deployment Cloudflare не проверены; GitHub push и состояние хостинга учитываются отдельно.
 
