@@ -19,12 +19,12 @@ npm run dev
 
 ## Cloudflare Workers
 
-- Root directory: `MCStuff`.
+- Root directory: корень репозитория (`/` или пустое значение).
 - Build command: оставить пустым.
-- Deploy command: `npx wrangler@4 deploy`.
+- Deploy command: `npx wrangler@4.156.1 deploy`. Стандартная команда `npx wrangler deploy` также найдёт корневой конфиг.
 - Имя Worker: `mcstuff`.
 
-Конфигурация находится в `MCStuff/wrangler.jsonc`. Подключение Workers выполняется в аккаунте владельца репозитория. Обновления отправляются только по его явной команде.
+Единственная конфигурация `wrangler.jsonc` находится в корне репозитория и указывает на `MCStuff/public`. Сборка не требуется. Локальная команда `npm run deploy` из `MCStuff` явно использует этот же конфиг. Подключение Workers выполняется в аккаунте владельца репозитория. Обновления отправляются только по его явной команде.
 
 ## Лицензия
 
