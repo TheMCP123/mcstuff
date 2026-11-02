@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;550;600;650&display=swap');
+
+:root {
+  color-scheme: dark;
+  font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  --background: #101113;
+  --sidebar: #151619;
+  --line: #292b2f;
+  --text: #e9e9eb;
+  --muted: #919499;
+  --accent: #a6ce96;
+  --sidebar-width: 236px;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--background); color: var(--text); font-size: 14px; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { color: inherit; font: inherit; cursor: pointer; border: 0; }
+button, a { -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+::selection { background: #384431; }
+.icon { display: block; width: 19px; height: 19px; flex-shrink: 0; }
+
+.skip-link { position: fixed; left: 16px; top: -70px; z-index: 100; padding: 12px 16px; background: var(--text); color: var(--background); border-radius: 5px; }
+.skip-link:focus { top: 12px; }
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 30; width: var(--sidebar-width); padding: 28px 16px; background: var(--sidebar); border-right: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; width: fit-content; padding: 0 12px; font-size: 22px; font-weight: 650; letter-spacing: -.8px; }
+.brand img { width: 30px; height: 30px; }
+.brand-light { font-weight: 500; }
+.navigation { display: flex; flex-direction: column; gap: 5px; margin-top: 40px; }
+.nav-link { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 11px 13px; color: var(--muted); border-radius: 5px; font-size: 13px; transition: background .15s, color .15s; }
+.nav-link:hover { background: #202125; color: var(--text); }
+.nav-link.active { background: #242629; color: var(--text); }
+.nav-link.active .icon { color: var(--accent); }
+
+.workspace { min-height: 100dvh; margin-left: var(--sidebar-width); }
+.mobile-header { display: none; }
+main { width: 100%; max-width: 1440px; min-height: 100dvh; margin: 0 auto; padding: 42px; }
+main:focus { outline: none; }
+h1 { margin: 0; padding-bottom: 26px; border-bottom: 1px solid var(--line); font-size: 27px; line-height: 1.3; font-weight: 550; letter-spacing: -.7px; }
+.empty-state { margin: 30px 0 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.icon-button { display: grid; place-items: center; width: 36px; height: 36px; background: transparent; color: var(--text); border-radius: 5px; }
+.icon-button:hover { background: #242629; }
+.scrim { display: none; }
+.noscript { margin: 0 24px 24px calc(var(--sidebar-width) + 42px); color: var(--muted); }
+
+@media (max-width: 1000px) {
+  :root { --sidebar-width: 214px; }
+  main { padding: 34px 28px; }
+  .sidebar { padding-inline: 13px; }
+  .brand { font-size: 21px; }
+  .nav-link { font-size: 12px; }
+}
+
+@media (max-width: 760px) {
+  .sidebar { width: min(270px, calc(100vw - 64px)); padding: 26px 16px; transform: translateX(-100%); transition: transform .18s; }
+  .workspace { margin-left: 0; }
+  .mobile-header { height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 17px; border-bottom: 1px solid var(--line); }
+  .mobile-brand { font-size: 17px; font-weight: 600; letter-spacing: -.4px; }
+  main { min-height: calc(100dvh - 64px); padding: 28px 22px; }
+  h1 { font-size: 25px; padding-bottom: 22px; }
+  .empty-state { margin-top: 24px; font-size: 12px; }
+  .scrim { display: block; position: fixed; inset: 0; z-index: 20; background: #0008; }
+  .menu-open { overflow: hidden; }
+  .menu-open .sidebar { transform: translateX(0); }
+  .menu-open .icon-button { position: relative; z-index: 25; }
+  .noscript { margin: 0 22px 22px; }
+}
+
+@media (max-width: 360px) {
+  main { padding-inline: 18px; }
+  h1 { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}

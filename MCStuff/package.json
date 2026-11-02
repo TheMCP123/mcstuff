@@ -1,0 +1,14 @@
+{
+  "name": "mcstuff",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "description": "MCStuff — сборки, ресурсы и инструменты для Minecraft.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "check": "node --check public/app.js && node --check scripts/dev.mjs",
+    "deploy": "npx wrangler@4 deploy"
+  }
+}
