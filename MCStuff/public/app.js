@@ -1,7 +1,5 @@
 const paths = {
   layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>',
-  box: '<path d="m12 3 9 5v8l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v8M7.5 5.5l9 5"/>',
-  tools: '<path d="m14.5 6.5 3 3M4 20l5-5M14 3a6 6 0 0 0-6.3 8.1L3.6 15.2a3 3 0 0 0 4.2 4.2l4.1-4.1A6 6 0 0 0 20 9l-4 4-5-5 4-4-1-1Z"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
 };
 
@@ -12,13 +10,11 @@ for (const element of document.querySelectorAll('[data-icon]')) {
 const pages = {
   home: { title: 'MCStuff', emptyText: 'No tools added yet.' },
   builder: { title: 'Pack Builder', emptyText: 'This section is empty.' },
-  resources: { title: 'Resources', emptyText: 'This section is empty.' },
-  tools: { title: 'Tools', emptyText: 'This section is empty.' },
 };
 
 const sounds = {
   accent: { type: 'sine', start: 760, end: 580, volume: 0.025, duration: 0.07 },
-  category: { type: 'triangle', start: 440, end: 300, volume: 0.018, duration: 0.05 },
+  category: { type: 'triangle', start: 440, end: 300, volume: 0.025, duration: 0.05 },
 };
 
 const root = document.documentElement;
