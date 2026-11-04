@@ -30,7 +30,6 @@ const menuToggle = document.querySelector('#menu-toggle');
 const scrim = document.querySelector('#scrim');
 const mobileQuery = window.matchMedia('(max-width: 760px)');
 let currentPage = null;
-let pageAnimations = [];
 let selectedTheme = null;
 let audioContext = null;
 let soundRequest = 0;
@@ -61,50 +60,19 @@ function setMenu(open, restoreFocus = false) {
   } else if (restoreFocus) menuToggle.focus();
 }
 
-function cancelPageAnimations() {
-  pageAnimations.forEach(animation => animation.cancel());
-  pageAnimations = [];
-  stage.querySelectorAll('.page-leaving').forEach(view => view.remove());
-}
-
-function showPage(page, previous) {
-  cancelPageAnimations();
-  const outgoing = stage.querySelector('.page-view');
-  const incoming = document.createElement('div');
-  incoming.className = 'page-view';
+function showPage(page) {
+  const view = document.createElement('div');
+  view.className = 'page-view';
   const { title, emptyText } = pages[page];
-  incoming.innerHTML = `<h1>${title}</h1><p class="empty-state">${emptyText}</p>`;
-
-  if (!outgoing || typeof incoming.animate !== 'function') {
-    stage.replaceChildren(incoming);
-    return;
-  }
-
-  const order = Object.keys(pages);
-  const direction = Math.sign(order.indexOf(page) - order.indexOf(previous)) || 1;
-  outgoing.classList.add('page-leaving');
-  outgoing.setAttribute('aria-hidden', 'true');
-  outgoing.inert = true;
-  stage.append(incoming);
-  pageAnimations = [
-    outgoing.animate([
-      { opacity: 1, transform: 'translateX(0)' },
-      { opacity: 0, transform: `translateX(${-direction * 18}px)` },
-    ], { duration: 180, easing: 'ease-out', fill: 'forwards' }),
-    incoming.animate([
-      { opacity: 0, transform: `translateX(${direction * 24}px)` },
-      { opacity: 1, transform: 'translateX(0)' },
-    ], { duration: 300, easing: 'cubic-bezier(.2,.75,.25,1)' }),
-  ];
-  Promise.allSettled(pageAnimations.map(animation => animation.finished)).then(() => outgoing.remove());
+  view.innerHTML = `<h1>${title}</h1><p class="empty-state">${emptyText}</p>`;
+  stage.replaceChildren(view);
 }
 
 function render(moveFocus = false) {
   const page = getPage();
-  const previous = currentPage;
-  if (page !== previous) {
+  if (page !== currentPage) {
     currentPage = page;
-    showPage(page, previous);
+    showPage(page);
     navLinks.forEach(link => {
       const active = link.dataset.page === page;
       link.classList.toggle('active', active);
@@ -194,7 +162,7 @@ document.addEventListener('keydown', event => {
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 });
 
-[...new Set([...sidebar.querySelectorAll('a[href]'), ...homeLinks])].forEach(link => link.addEventListener('click', () => {
+[...new Set([...navLinks, ...homeLinks])].forEach(link => link.addEventListener('click', () => {
   const target = link.dataset.homeLink !== undefined ? 'home' : link.dataset.page;
   if (target === currentPage) {
     setMenu(false);
