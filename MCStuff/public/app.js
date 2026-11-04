@@ -16,6 +16,11 @@ const pages = {
   tools: { title: 'Tools', emptyText: 'This section is empty.' },
 };
 
+const sounds = {
+  accent: { type: 'sine', start: 760, end: 580, volume: 0.025, duration: 0.07 },
+  category: { type: 'triangle', start: 440, end: 300, volume: 0.018, duration: 0.05 },
+};
+
 const root = document.documentElement;
 const main = document.querySelector('#main');
 const stage = document.querySelector('#page-stage');
@@ -83,7 +88,7 @@ function render(moveFocus = false) {
       if (page === 'home') link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
-    document.title = page === 'home' ? 'MCStuff' : `MCStuff — ${pages[page].title}`;
+    document.title = 'MCStuff';
     syncIndicator();
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -102,7 +107,7 @@ function applyTheme(theme, persist = true) {
   }
 }
 
-async function playThemeSound() {
+async function playSound(sound) {
   const request = ++soundRequest;
   try {
     if (typeof window.AudioContext !== 'function') return;
@@ -115,12 +120,12 @@ async function playThemeSound() {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
     const now = audioContext.currentTime;
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(760, now);
-    oscillator.frequency.exponentialRampToValueAtTime(580, now + 0.055);
+    oscillator.type = sound.type;
+    oscillator.frequency.setValueAtTime(sound.start, now);
+    oscillator.frequency.exponentialRampToValueAtTime(sound.end, now + sound.duration - 0.015);
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.025, now + 0.004);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
+    gain.gain.linearRampToValueAtTime(sound.volume, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + sound.duration - 0.005);
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
     oscillator.addEventListener('ended', () => {
@@ -128,7 +133,7 @@ async function playThemeSound() {
       gain.disconnect();
     }, { once: true });
     oscillator.start(now);
-    oscillator.stop(now + 0.07);
+    oscillator.stop(now + sound.duration);
   } catch {}
 }
 
@@ -136,7 +141,7 @@ function selectTheme(button) {
   const theme = button.dataset.themeOption;
   if (theme === selectedTheme) return;
   applyTheme(theme);
-  void playThemeSound();
+  void playSound(sounds.accent);
 }
 
 themeButtons.forEach(button => button.addEventListener('click', () => selectTheme(button)));
@@ -162,12 +167,13 @@ document.addEventListener('keydown', event => {
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 });
 
-[...new Set([...navLinks, ...homeLinks])].forEach(link => link.addEventListener('click', () => {
+[...new Set([...navLinks, ...homeLinks])].forEach(link => link.addEventListener('click', event => {
+  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   const target = link.dataset.homeLink !== undefined ? 'home' : link.dataset.page;
   if (target === currentPage) {
     setMenu(false);
     main.focus({ preventScroll: true });
-  }
+  } else if (target !== getPage()) void playSound(sounds.category);
 }));
 
 applyTheme(root.dataset.theme, false);
