@@ -27,6 +27,12 @@ const navLinks = [...navigation.querySelectorAll('.nav-link')];
 const homeLinks = [...document.querySelectorAll('[data-home-link]')];
 const themeButtons = [...document.querySelectorAll('[data-theme-option]')];
 const themeNames = new Set(themeButtons.map(button => button.dataset.themeOption));
+const customColorInput = document.querySelector('#custom-accent');
+const customColorPicker = document.querySelector('.theme-custom');
+const hexColor = /^#[0-9a-f]{6}$/i;
+let customAccent = getComputedStyle(root).getPropertyValue('--custom-accent').trim();
+if (!hexColor.test(customAccent)) customAccent = customColorInput.value;
+customColorInput.value = customAccent;
 const menuToggle = document.querySelector('#menu-toggle');
 const scrim = document.querySelector('#scrim');
 const mobileQuery = window.matchMedia('(max-width: 760px)');
@@ -93,11 +99,12 @@ function render(moveFocus = false) {
 }
 
 function applyTheme(theme, persist = true) {
-  selectedTheme = themeNames.has(theme) ? theme : 'green';
+  selectedTheme = themeNames.has(theme) || theme === 'custom' ? theme : 'green';
   root.dataset.theme = selectedTheme;
   themeButtons.forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.themeOption === selectedTheme));
   });
+  customColorPicker.dataset.selected = String(selectedTheme === 'custom');
   if (persist) {
     try { localStorage.setItem('mcstuff-theme', selectedTheme); } catch {}
   }
@@ -140,7 +147,22 @@ function selectTheme(button) {
   void playSound(sounds.accent);
 }
 
+function selectCustomAccent() {
+  const color = customColorInput.value.toLowerCase();
+  if (!hexColor.test(color)) return;
+  const changed = selectedTheme !== 'custom' || color !== customAccent;
+  customAccent = color;
+  root.style.setProperty('--custom-accent', color);
+  try { localStorage.setItem('mcstuff-custom-accent', color); } catch {}
+  applyTheme('custom');
+  if (changed) void playSound(sounds.accent);
+}
+
 themeButtons.forEach(button => button.addEventListener('click', () => selectTheme(button)));
+customColorInput.addEventListener('click', () => {
+  if (selectedTheme !== 'custom') selectCustomAccent();
+});
+customColorInput.addEventListener('change', selectCustomAccent);
 menuToggle.addEventListener('click', () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true', true));
 scrim.addEventListener('click', () => setMenu(false, true));
 document.querySelector('.skip-link').addEventListener('click', event => {
@@ -156,7 +178,7 @@ document.addEventListener('keydown', event => {
   if (!document.body.classList.contains('menu-open')) return;
   if (event.key === 'Escape') { setMenu(false, true); return; }
   if (event.key !== 'Tab') return;
-  const targets = [...sidebar.querySelectorAll('a[href], button'), menuToggle];
+  const targets = [...sidebar.querySelectorAll('a[href], button, input'), menuToggle];
   const first = targets[0];
   const last = targets.at(-1);
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }

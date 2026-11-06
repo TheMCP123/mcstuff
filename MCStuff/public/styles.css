@@ -4,11 +4,12 @@
   color-scheme: dark;
   font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-synthesis: none;
-  --theme-green: #a6ce96;
-  --theme-blue: #91bfe5;
-  --theme-purple: #bfa3df;
-  --theme-amber: #d6b385;
-  --theme-rose: #dfa1bc;
+  --theme-green: #22c55e;
+  --theme-blue: #4b91ff;
+  --theme-yellow: #facc15;
+  --theme-red: #ff5252;
+  --theme-purple: #a970ff;
+  --custom-accent: var(--theme-green);
   --background: #101113;
   --sidebar: #151619;
   --line: #292b2f;
@@ -17,22 +18,25 @@
   --accent: var(--theme-green);
   --hover: #202125;
   --selected: #242629;
-  --selection: #384431;
+  --selection: color-mix(in srgb, var(--accent) 30%, var(--background));
   --logo-ink: #18211a;
   --sidebar-width: 236px;
 }
 
 :root[data-theme='blue'] {
-  --accent: var(--theme-blue); --selection: #344c66;
+  --accent: var(--theme-blue);
 }
 :root[data-theme='purple'] {
-  --accent: var(--theme-purple); --selection: #4c395c;
+  --accent: var(--theme-purple);
 }
-:root[data-theme='amber'] {
-  --accent: var(--theme-amber); --selection: #56432d;
+:root[data-theme='yellow'] {
+  --accent: var(--theme-yellow);
 }
-:root[data-theme='rose'] {
-  --accent: var(--theme-rose); --selection: #583849;
+:root[data-theme='red'] {
+  --accent: var(--theme-red);
+}
+:root[data-theme='custom'] {
+  --accent: var(--custom-accent);
 }
 
 * { box-sizing: border-box; }
@@ -61,20 +65,24 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-link.active .icon { color: var(--accent); }
 .nav-content { display: flex; align-items: center; gap: 12px; pointer-events: none; }
 
-.sidebar-footer { display: flex; flex-shrink: 0; align-items: center; gap: 12px; margin-top: auto; padding-top: 28px; }
+.sidebar-footer { display: flex; flex-shrink: 0; align-items: center; gap: 8px; margin-top: auto; padding-top: 28px; }
 .theme-picker { display: flex; flex-shrink: 0; align-items: center; justify-content: flex-start; gap: 2px; }
-.theme-button { position: relative; display: grid; place-items: center; flex: 0 0 24px; width: 24px; height: 28px; padding: 0; background: transparent; border-radius: 6px; }
+.theme-button { position: relative; display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 28px; padding: 0; background: transparent; border-radius: 6px; cursor: pointer; }
 .theme-swatch { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--swatch); }
 .theme-button:hover .theme-swatch { transform: scale(1.15); }
 .theme-button:active .theme-swatch { transform: scale(.88); }
-.theme-button[aria-pressed='true'] .theme-swatch { transform: scale(1.18); }
+.theme-button[aria-pressed='true'] .theme-swatch, .theme-custom[data-selected='true'] .theme-swatch { transform: scale(1.18); }
 .theme-button:focus-visible { outline: none; }
-.theme-button:focus-visible::after { content: ''; position: absolute; bottom: 0; left: 9px; width: 6px; height: 2px; border-radius: 1px; background: var(--text); }
+.theme-button:focus-visible::after, .custom-color-input:focus-visible + .theme-swatch::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 6px; height: 2px; border-radius: 1px; background: var(--text); }
 [data-theme-option='green'] { --swatch: var(--theme-green); }
 [data-theme-option='blue'] { --swatch: var(--theme-blue); }
 [data-theme-option='purple'] { --swatch: var(--theme-purple); }
-[data-theme-option='amber'] { --swatch: var(--theme-amber); }
-[data-theme-option='rose'] { --swatch: var(--theme-rose); }
+[data-theme-option='yellow'] { --swatch: var(--theme-yellow); }
+[data-theme-option='red'] { --swatch: var(--theme-red); }
+.theme-custom .theme-swatch { display: grid; place-items: center; background: transparent; color: var(--muted); }
+.theme-custom[data-selected='true'] .theme-swatch { background: var(--custom-accent); color: var(--background); }
+.theme-custom svg { display: block; width: 10px; height: 10px; }
+.custom-color-input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
 .discord-link { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; margin-left: auto; color: var(--muted); border-radius: 4px; }
 .discord-link svg { display: block; width: 20px; height: 20px; }
 .discord-link:hover { color: var(--text); }
