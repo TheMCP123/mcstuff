@@ -49,7 +49,7 @@ function getPage() {
 }
 
 function syncIndicator() {
-  const active = navLinks.find(link => link.dataset.page === currentPage);
+  const active = navLinks.find(link => link.dataset.page === currentPage && !link.hidden);
   navigation.dataset.active = String(Boolean(active));
   if (!active) return;
   indicator.style.height = `${active.offsetHeight}px`;
@@ -65,7 +65,7 @@ function setMenu(open, restoreFocus = false) {
   scrim.hidden = !expanded;
   if (expanded) {
     syncIndicator();
-    (sidebar.querySelector('[aria-current="page"]') || sidebar.querySelector('a')).focus();
+    (sidebar.querySelector('[aria-current="page"]:not([hidden])') || sidebar.querySelector('a')).focus();
   } else if (restoreFocus) menuToggle.focus();
 }
 
@@ -183,7 +183,7 @@ document.addEventListener('keydown', event => {
   if (!document.body.classList.contains('menu-open')) return;
   if (event.key === 'Escape') { setMenu(false, true); return; }
   if (event.key !== 'Tab') return;
-  const targets = [...sidebar.querySelectorAll('a[href], button, input'), menuToggle];
+  const targets = [...sidebar.querySelectorAll('a[href], button, input'), menuToggle].filter(target => !target.hidden && !target.disabled && target.getClientRects().length);
   const first = targets[0];
   const last = targets.at(-1);
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -201,12 +201,7 @@ document.addEventListener('click', event => {
   } else if (target !== getPage()) void playSound(sounds.category);
 });
 
-setupToolSearch({
-  setMenu, mobileQuery, main,
-  navigate(page) {
-    if (page !== getPage()) { void playSound(sounds.category); window.location.hash = page; }
-  },
-});
+setupToolSearch({ setMenu, mobileQuery, main, syncIndicator });
 
 applyTheme(root.dataset.theme, false);
 render();

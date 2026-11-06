@@ -29,12 +29,16 @@
         <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9"/><path d="m20 8 12 7-12 7-12-7 12-7Zm-12 10 10.5 6.2V33L8 26.8V18Zm24 0-10.5 6.2V33L32 26.8V18Z"/></svg>
         <span>MCStuff</span>
       </a>
-      <button type="button" class="search-toggle" id="search-toggle"><span data-icon="search"></span><span>Search tools</span><kbd>Ctrl K</kbd></button>
-      <nav class="navigation" aria-label="Main navigation">
+      <div class="tool-search" role="search" aria-label="Tools">
+        <span data-icon="search"></span><input type="search" id="tool-query" aria-label="Search tools" placeholder="Search tools" autocomplete="off" spellcheck="false" maxlength="120" aria-controls="tool-navigation" aria-describedby="tool-search-status"><kbd aria-hidden="true">Ctrl K</kbd><button type="button" id="clear-search" aria-label="Clear search" hidden><span data-icon="close"></span></button>
+      </div>
+      <nav class="navigation" id="tool-navigation" aria-label="Main navigation">
         <span class="nav-indicator" aria-hidden="true"></span>
         <a class="nav-link" href="#builder" data-page="builder"><span class="nav-content"><span data-icon="layers"></span><span>Pack Builder</span></span></a>
         <a class="nav-link" href="#colors" data-page="colors"><span class="nav-content"><span data-icon="palette"></span><span>Colors &amp; Formatting</span></span></a>
       </nav>
+      <p id="search-empty" class="search-empty" hidden>No tools found.</p>
+      <span id="tool-search-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></span>
       <div class="sidebar-footer">
         <div class="theme-picker" role="group" aria-label="Accent color">
           <button type="button" class="theme-button" data-theme-option="green" aria-label="Green accent" title="Green" aria-pressed="true"><span class="theme-swatch"></span></button>
@@ -56,12 +60,6 @@
       </header>
       <main id="main" tabindex="-1"><div class="page-stage" id="page-stage"></div></main>
     </div>
-    <dialog id="tool-search" class="search-dialog" aria-label="Search tools">
-      <div class="search-input-row"><span data-icon="search"></span><input type="search" id="tool-query" aria-label="Search tools" placeholder="Search tools…" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="tool-results" aria-expanded="true"><button type="button" class="icon-button" id="search-close" aria-label="Close search"><span data-icon="close"></span></button></div>
-      <div class="search-results" id="tool-results" role="listbox" aria-label="Tools"></div>
-      <p id="search-empty" class="search-empty" role="status" hidden>No tools found.</p>
-      <div class="search-hints"><span>↑ ↓ Navigate</span><span>Enter Open</span><span>Esc Close</span></div>
-    </dialog>
     <noscript><p class="noscript">Enable JavaScript to navigate MCStuff.</p></noscript>
   </body>
 </html>
