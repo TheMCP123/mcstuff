@@ -1,6 +1,12 @@
+import { mountColorsTool } from './colors-tool.js';
+import { setupToolSearch } from './tool-search.js';
+
 const paths = {
   layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
+  close: '<path d="m6 6 12 12M6 18 18 6"/>',
+  palette: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="m14 14 7 7m0-7-7 7"/>',
 };
 
 for (const element of document.querySelectorAll('[data-icon]')) {
@@ -8,8 +14,9 @@ for (const element of document.querySelectorAll('[data-icon]')) {
 }
 
 const pages = {
-  home: { title: 'MCStuff', emptyText: 'No tools added yet.' },
+  home: { title: 'MCStuff' },
   builder: { title: 'Pack Builder', emptyText: 'This section is empty.' },
+  colors: { title: 'Colors & Formatting' },
 };
 
 const sounds = {
@@ -27,12 +34,6 @@ const navLinks = [...navigation.querySelectorAll('.nav-link')];
 const homeLinks = [...document.querySelectorAll('[data-home-link]')];
 const themeButtons = [...document.querySelectorAll('[data-theme-option]')];
 const themeNames = new Set(themeButtons.map(button => button.dataset.themeOption));
-const customColorInput = document.querySelector('#custom-accent');
-const customColorPicker = document.querySelector('.theme-custom');
-const hexColor = /^#[0-9a-f]{6}$/i;
-let customAccent = getComputedStyle(root).getPropertyValue('--custom-accent').trim();
-if (!hexColor.test(customAccent)) customAccent = customColorInput.value;
-customColorInput.value = customAccent;
 const menuToggle = document.querySelector('#menu-toggle');
 const scrim = document.querySelector('#scrim');
 const mobileQuery = window.matchMedia('(max-width: 760px)');
@@ -40,6 +41,7 @@ let currentPage = null;
 let selectedTheme = null;
 let audioContext = null;
 let soundRequest = 0;
+let disposePage = () => {};
 
 function getPage() {
   const key = window.location.hash.slice(1);
@@ -68,11 +70,30 @@ function setMenu(open, restoreFocus = false) {
 }
 
 function showPage(page) {
+  disposePage();
+  disposePage = () => {};
   const view = document.createElement('div');
   view.className = 'page-view';
   const { title, emptyText } = pages[page];
-  view.innerHTML = `<h1>${title}</h1><p class="empty-state">${emptyText}</p>`;
+  const heading = document.createElement('h1');
+  heading.textContent = title;
+  view.append(heading);
+  if (emptyText) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-state';
+    empty.textContent = emptyText;
+    view.append(empty);
+  }
+  if (page === 'home') {
+    const entry = document.createElement('a');
+    entry.className = 'tool-entry';
+    entry.href = '#colors';
+    entry.dataset.page = 'colors';
+    entry.innerHTML = '<span><strong>Colors &amp; Formatting</strong><span>MiniMessage, Legacy, HEX &amp; JSON</span></span><span aria-hidden="true">↗</span>';
+    view.append(entry);
+  }
   stage.replaceChildren(view);
+  if (page === 'colors') disposePage = mountColorsTool(view);
 }
 
 function render(moveFocus = false) {
@@ -99,12 +120,11 @@ function render(moveFocus = false) {
 }
 
 function applyTheme(theme, persist = true) {
-  selectedTheme = themeNames.has(theme) || theme === 'custom' ? theme : 'green';
+  selectedTheme = themeNames.has(theme) ? theme : 'green';
   root.dataset.theme = selectedTheme;
   themeButtons.forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.themeOption === selectedTheme));
   });
-  customColorPicker.dataset.selected = String(selectedTheme === 'custom');
   if (persist) {
     try { localStorage.setItem('mcstuff-theme', selectedTheme); } catch {}
   }
@@ -147,22 +167,7 @@ function selectTheme(button) {
   void playSound(sounds.accent);
 }
 
-function selectCustomAccent() {
-  const color = customColorInput.value.toLowerCase();
-  if (!hexColor.test(color)) return;
-  const changed = selectedTheme !== 'custom' || color !== customAccent;
-  customAccent = color;
-  root.style.setProperty('--custom-accent', color);
-  try { localStorage.setItem('mcstuff-custom-accent', color); } catch {}
-  applyTheme('custom');
-  if (changed) void playSound(sounds.accent);
-}
-
 themeButtons.forEach(button => button.addEventListener('click', () => selectTheme(button)));
-customColorInput.addEventListener('click', () => {
-  if (selectedTheme !== 'custom') selectCustomAccent();
-});
-customColorInput.addEventListener('change', selectCustomAccent);
 menuToggle.addEventListener('click', () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true', true));
 scrim.addEventListener('click', () => setMenu(false, true));
 document.querySelector('.skip-link').addEventListener('click', event => {
@@ -185,14 +190,23 @@ document.addEventListener('keydown', event => {
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 });
 
-[...new Set([...navLinks, ...homeLinks])].forEach(link => link.addEventListener('click', event => {
+document.addEventListener('click', event => {
+  const link = event.target.closest('a[data-page], a[data-home-link]');
+  if (!link) return;
   if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   const target = link.dataset.homeLink !== undefined ? 'home' : link.dataset.page;
   if (target === currentPage) {
     setMenu(false);
     main.focus({ preventScroll: true });
   } else if (target !== getPage()) void playSound(sounds.category);
-}));
+});
+
+setupToolSearch({
+  setMenu, mobileQuery, main,
+  navigate(page) {
+    if (page !== getPage()) { void playSound(sounds.category); window.location.hash = page; }
+  },
+});
 
 applyTheme(root.dataset.theme, false);
 render();

@@ -8,7 +8,8 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "check": "node --check public/app.js && node --check scripts/dev.mjs",
+    "check": "node --check public/app.js && node --check public/formatting.js && node --check public/colors-tool.js && node --check public/tool-catalog.js && node --check public/tool-search.js && node --check scripts/dev.mjs",
+    "test": "node --test",
     "deploy": "npx wrangler@4.156.1 deploy --config ../wrangler.jsonc"
   }
 }
