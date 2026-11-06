@@ -2,11 +2,11 @@ import { mountColorsTool } from './colors-tool.js';
 import { setupToolSearch } from './tool-search.js';
 
 const paths = {
-  layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>',
+  package: '<path d="m12 3 9 5v8l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v8M7.5 5.5l9 5"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
   close: '<path d="m6 6 12 12M6 18 18 6"/>',
-  palette: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="m14 14 7 7m0-7-7 7"/>',
+  palette: '<path d="M12 3a9 9 0 0 0 0 18h1.1a2.4 2.4 0 0 0 1.7-4.1c-.9-.9-.3-2.4.9-2.4H18a3 3 0 0 0 3-3C21 6.8 17 3 12 3Z"/><circle cx="7.5" cy="10" r=".9"/><circle cx="10.5" cy="6.7" r=".9"/><circle cx="15" cy="7.5" r=".9"/><circle cx="6.8" cy="14.2" r=".9"/>',
 };
 
 for (const element of document.querySelectorAll('[data-icon]')) {

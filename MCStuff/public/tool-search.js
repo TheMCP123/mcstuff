@@ -2,7 +2,6 @@ import { searchTools } from './tool-catalog.js';
 
 export function setupToolSearch({ setMenu, mobileQuery, main, syncIndicator }) {
   const input = document.querySelector('#tool-query');
-  const field = document.querySelector('.tool-search');
   const navigation = document.querySelector('#tool-navigation');
   const links = [...navigation.querySelectorAll('.nav-link')];
   const clear = document.querySelector('#clear-search');
@@ -22,7 +21,6 @@ export function setupToolSearch({ setMenu, mobileQuery, main, syncIndicator }) {
     const hasQuery = Boolean(input.value.trim());
     const matches = hasQuery ? searchTools(input.value).map(tool => tool.id) : links.map(link => link.dataset.page);
     const next = matches.map(id => links.find(link => link.dataset.page === id)).filter(Boolean);
-    field.dataset.filled = String(Boolean(input.value));
     clear.hidden = !input.value;
     const announcement = hasQuery ? (next.length ? `${next.length} ${next.length === 1 ? 'tool' : 'tools'} found.` : 'No tools found.') : '';
     if (status.textContent !== announcement) status.textContent = announcement;
@@ -85,8 +83,5 @@ export function setupToolSearch({ setMenu, mobileQuery, main, syncIndicator }) {
     (visible[next] || input).focus();
   });
   document.querySelector('#mobile-search-toggle').addEventListener('click', focusSearch);
-  document.addEventListener('keydown', event => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); focusSearch(); }
-  });
   update(false);
 }
