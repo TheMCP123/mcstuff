@@ -4,6 +4,12 @@ export function setupToolSearch({ setMenu, mobileQuery, main, syncIndicator }) {
   const input = document.querySelector('#tool-query');
   const navigation = document.querySelector('#tool-navigation');
   const links = [...navigation.querySelectorAll('.nav-link')];
+  const groups = [...navigation.querySelectorAll('.nav-category')].map(element => ({
+    element,
+    title: element.querySelector('.nav-category-title'),
+    list: element.querySelector('.nav-category-links'),
+    links: [...element.querySelectorAll('.nav-link')],
+  }));
   const clear = document.querySelector('#clear-search');
   const empty = document.querySelector('#search-empty');
   const status = document.querySelector('#tool-search-status');
@@ -20,27 +26,35 @@ export function setupToolSearch({ setMenu, mobileQuery, main, syncIndicator }) {
   function update(animateResults = true) {
     const hasQuery = Boolean(input.value.trim());
     const matches = hasQuery ? searchTools(input.value).map(tool => tool.id) : links.map(link => link.dataset.page);
-    const next = matches.map(id => links.find(link => link.dataset.page === id)).filter(Boolean);
+    const matched = matches.map(id => links.find(link => link.dataset.page === id)).filter(Boolean);
+    const results = groups.map(group => ({ group, items: matched.filter(link => group.links.includes(link)) }));
+    const next = results.flatMap(result => result.items);
+    const categoriesChanged = results.some(({ group, items }) => group.element.hidden !== (hasQuery && !items.length));
     clear.hidden = !input.value;
     const announcement = hasQuery ? (next.length ? `${next.length} ${next.length === 1 ? 'tool' : 'tools'} found.` : 'No tools found.') : '';
     if (status.textContent !== announcement) status.textContent = announcement;
-    if (next.length === visible.length && next.every((link, index) => link === visible[index])) return;
+    if (!categoriesChanged && next.length === visible.length && next.every((link, index) => link === visible[index])) return;
 
-    const positions = new Map(visible.map(link => [link, link.getBoundingClientRect().top]));
+    const previousNodes = [...visible, ...groups.filter(group => !group.element.hidden).map(group => group.title)];
+    const positions = new Map(previousNodes.map(node => [node, node.getBoundingClientRect().top]));
     animations.forEach(animation => animation.cancel());
     animations.clear();
     for (const link of links) link.hidden = !next.includes(link);
-    navigation.append(...next);
+    for (const { group, items } of results) {
+      group.element.hidden = hasQuery && !items.length;
+      group.list.append(...items);
+    }
     empty.hidden = Boolean(next.length);
     if (document.activeElement?.hidden) input.focus({ preventScroll: true });
     visible = next;
     syncIndicator();
 
     if (!animateResults) return;
-    for (const link of visible) {
-      const previous = positions.get(link);
-      const offset = previous === undefined ? 5 : previous - link.getBoundingClientRect().top;
-      if (previous === undefined || Math.abs(offset) > .5) animate(link, [{ opacity: previous === undefined ? 0 : 1, transform: `translateY(${offset}px)` }, { opacity: 1, transform: 'translateY(0)' }]);
+    const nextNodes = [...visible, ...groups.filter(group => !group.element.hidden).map(group => group.title)];
+    for (const node of nextNodes) {
+      const previous = positions.get(node);
+      const offset = previous === undefined ? 5 : previous - node.getBoundingClientRect().top;
+      if (previous === undefined || Math.abs(offset) > .5) animate(node, [{ opacity: previous === undefined ? 0 : 1, transform: `translateY(${offset}px)` }, { opacity: 1, transform: 'translateY(0)' }]);
     }
     if (!next.length) animate(empty, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }]);
   }

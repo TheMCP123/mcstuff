@@ -1,6 +1,6 @@
 export const TOOL_CATALOG = [
-  { id: 'colors', title: 'Colors & Formatting', detail: 'MiniMessage, Legacy, HEX & JSON', keywords: 'color colour colors colours format formatting text chat minimessage mini message legacy hex rgb gradient gradients json code codes bold italic underline underlined strikethrough obfuscated style styles decoration palette rainbow bungee bungeecord minecraft цвет цвета цветовые палитра формат форматирование текст градиент градиенты коды жирный курсив' },
-  { id: 'builder', title: 'Pack Builder', detail: '', keywords: 'pack packs builder packbuilder modrinth mod mods plugin plugins modpack modpacks minecraft сборка сборки сборок билдер мод моды модпак модпаки плагин плагины' },
+  { id: 'colors', title: 'Colors & Formatting', category: 'general', detail: 'MiniMessage, Legacy, HEX & JSON', keywords: 'color colour colors colours format formatting text chat minimessage mini message legacy hex rgb gradient gradients json code codes bold italic underline underlined strikethrough obfuscated style styles decoration palette rainbow bungee bungeecord minecraft цвет цвета цветовые палитра формат форматирование текст градиент градиенты коды жирный курсив' },
+  { id: 'builder', title: 'Pack Builder', category: 'general', detail: '', keywords: 'pack packs builder packbuilder modrinth mod mods plugin plugins modpack modpacks minecraft сборка сборки сборок билдер мод моды модпак модпаки плагин плагины' },
 ];
 
 const ignoredWords = new Set('a an the and for to of with in on find search tool tools how и для по на с из как найти инструмент инструменты'.split(' '));
@@ -41,7 +41,7 @@ function scoreTool(query, tool) {
   if (!words.length) return 0;
   const title = normalize(tool.title);
   const titleWords = title.split(' ').filter(word => !ignoredWords.has(word));
-  const aliases = normalize(`${tool.detail || ''} ${tool.keywords || ''}`).split(' ');
+  const aliases = normalize(`${tool.category || ''} ${tool.detail || ''} ${tool.keywords || ''}`).split(' ');
   const acronym = titleWords.map(word => word[0]).join('');
   if (words.length === 1 && words[0] === acronym) return 140;
   let score = 0;

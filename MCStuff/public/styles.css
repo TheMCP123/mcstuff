@@ -52,7 +52,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .brand-mark { display: block; width: 30px; height: 30px; flex-shrink: 0; }
 .brand-mark rect { fill: var(--accent); }
 .brand-mark path { fill: var(--logo-ink); }
-.navigation { position: relative; display: flex; flex-direction: column; flex-shrink: 0; gap: 5px; margin-top: 20px; }
+.navigation { position: relative; display: flex; flex-direction: column; flex-shrink: 0; gap: 22px; margin-top: 20px; }
+.nav-category-title { margin: 0; padding: 0 13px; color: var(--muted); font-size: 11px; line-height: 1.5; font-weight: 500; }
+.nav-category-links { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.nav-category-links:empty { display: none; }
 .nav-indicator { position: absolute; top: 0; left: 0; right: 0; height: 44px; background: var(--selected); border-radius: 5px; pointer-events: none; opacity: 0; transition: transform 360ms cubic-bezier(.2,.75,.25,1), height 360ms cubic-bezier(.2,.75,.25,1), opacity 180ms; }
 .navigation[data-active='true'] .nav-indicator { opacity: 1; }
 .nav-link { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 11px 13px; color: var(--muted); border-radius: 5px; font-size: 13px; }

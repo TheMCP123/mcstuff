@@ -34,8 +34,17 @@
       </div>
       <nav class="navigation" id="tool-navigation" aria-label="Main navigation">
         <span class="nav-indicator" aria-hidden="true"></span>
-        <a class="nav-link" href="#builder" data-page="builder"><span class="nav-content"><span data-icon="package"></span><span>Pack Builder</span></span></a>
-        <a class="nav-link" href="#colors" data-page="colors"><span class="nav-content"><span data-icon="palette"></span><span>Colors &amp; Formatting</span></span></a>
+        <section class="nav-category" data-category="general" aria-labelledby="nav-general-title">
+          <h2 class="nav-category-title" id="nav-general-title">General</h2>
+          <div class="nav-category-links">
+            <a class="nav-link" href="#builder" data-page="builder"><span class="nav-content"><span data-icon="package"></span><span>Pack Builder</span></span></a>
+            <a class="nav-link" href="#colors" data-page="colors"><span class="nav-content"><span data-icon="palette"></span><span>Colors &amp; Formatting</span></span></a>
+          </div>
+        </section>
+        <section class="nav-category" data-category="checkers" aria-labelledby="nav-checkers-title">
+          <h2 class="nav-category-title" id="nav-checkers-title">Checkers</h2>
+          <div class="nav-category-links"></div>
+        </section>
       </nav>
       <p id="search-empty" class="search-empty" hidden>No tools found.</p>
       <span id="tool-search-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></span>
