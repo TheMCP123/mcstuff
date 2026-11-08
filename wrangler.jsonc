@@ -1,10 +1,13 @@
 {
   "$schema": "https://unpkg.com/wrangler@4/config-schema.json",
   "name": "mcstuff",
+  "main": "./MCStuff/worker/index.js",
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "assets": {
     "directory": "./MCStuff/public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api", "/api/*"],
     "not_found_handling": "single-page-application"
   }
 }

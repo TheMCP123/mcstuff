@@ -1,6 +1,9 @@
 export const TOOL_CATALOG = [
   { id: 'colors', title: 'Colors & Formatting', category: 'general', detail: 'MiniMessage, Legacy, HEX & JSON', keywords: 'color colour colors colours format formatting text chat minimessage mini message legacy hex rgb gradient gradients json code codes bold italic underline underlined strikethrough obfuscated style styles decoration palette rainbow bungee bungeecord minecraft цвет цвета цветовые палитра формат форматирование текст градиент градиенты коды жирный курсив' },
   { id: 'builder', title: 'Pack Builder', category: 'general', detail: '', keywords: 'pack packs builder packbuilder modrinth mod mods plugin plugins modpack modpacks minecraft сборка сборки сборок билдер мод моды модпак модпаки плагин плагины' },
+  { id: 'skin', title: 'Skin Stealer', category: 'checkers', detail: 'Public Java skins · PNG download', keywords: 'skin skins stealer texture png download player username uuid скин скины скачать игрок' },
+  { id: 'waypoint', title: 'Waypoint Color', category: 'checkers', detail: 'Java Locator Bar marker color', keywords: 'waypoint locator marker color colour uuid player цвет метка локатор' },
+  { id: 'ign', title: 'IGN Availability', category: 'checkers', detail: 'Java username registration check', keywords: 'ign availability available name username nickname registration taken registered check ник имя занят свободен' },
 ];
 
 const ignoredWords = new Set('a an the and for to of with in on find search tool tools how и для по на с из как найти инструмент инструменты'.split(' '));

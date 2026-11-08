@@ -215,3 +215,34 @@ h1 { margin: 0; padding-bottom: 26px; border-bottom: 1px solid var(--line); font
   .color-controls { flex-direction: column; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
+
+.checker-tool { margin-top: 28px; }
+.checker-form { max-width: 650px; }
+.checker-input-row { display: flex; align-items: stretch; gap: 10px; }
+.checker-input-row input { flex: 1; min-width: 0; width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--sidebar); color: var(--text); font: inherit; font-size: 13px; }
+.checker-input-row input[aria-invalid='true'] { border-color: #cf7777; }
+.checker-input-row .action-button { flex-shrink: 0; white-space: nowrap; }
+.checker-status { margin: 24px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.checker-status.is-error { color: #f19b9b; }
+.checker-result:not(:empty) { max-width: 850px; margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--line); }
+.checker-result h2 { margin: 0 0 16px; font-size: 20px; font-weight: 550; overflow-wrap: anywhere; }
+.checker-code-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 18px; margin-top: 12px; }
+.checker-code-row code { min-width: 0; font: 13px/1.6 Consolas, 'Courier New', monospace; overflow-wrap: anywhere; }
+.checker-code-row .text-button { white-space: nowrap; }
+.checker-player-info { min-width: 0; }
+.skin-result { display: grid; grid-template-columns: minmax(160px, 280px) minmax(0, 1fr); align-items: start; gap: 32px; }
+.skin-texture { display: grid; place-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #0b0c0e; }
+.skin-texture img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.skin-head { display: block; width: 64px; height: 64px; margin-bottom: 18px; image-rendering: pixelated; }
+.checker-player-info .action-button { display: inline-block; margin-top: 24px; }
+.checker-player-info a[aria-disabled='true'] { opacity: .4; cursor: default; }
+.waypoint-result { display: flex; align-items: flex-start; gap: 24px; }
+.waypoint-swatch { flex: 0 0 80px; width: 80px; height: 80px; border: 1px solid #ffffff24; border-radius: 6px; }
+.locator-preview { position: relative; height: 7px; max-width: 420px; margin: 32px 0 20px; border: 1px solid #383b40; border-radius: 2px; background: #0b0c0e; }
+.locator-marker { position: absolute; top: -4px; left: calc(50% - 6px); width: 12px; height: 12px; transform: rotate(45deg); border: 1px solid #0008; }
+.ign-status { margin: 0 0 16px; font-size: 16px; font-weight: 500; }
+.ign-status.is-taken { color: #edba76; }
+.ign-status.is-unregistered { color: var(--text); }
+.checker-checked { display: block; margin-top: 24px; color: var(--muted); font-size: 11px; }
+@media (max-width: 850px) { .skin-result { grid-template-columns: minmax(0, 1fr); gap: 24px; } .skin-texture { max-width: 280px; } }
+@media (max-width: 400px) { .checker-input-row { flex-direction: column; } .checker-input-row .action-button { min-height: 38px; } .waypoint-result { gap: 16px; } .waypoint-swatch { flex-basis: 52px; width: 52px; height: 52px; } }

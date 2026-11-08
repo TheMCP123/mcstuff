@@ -1,5 +1,16 @@
 # История изменений
 
+## Рабочие Checkers — 2026-11-07
+
+- В Checkers добавлены Skin Stealer, Waypoint Color и IGN Availability с отдельными маршрутами, контурными иконками и поисковыми aliases. Pack Builder остаётся каркасом; Colors & Formatting сохранён.
+- Skin Stealer получает текущий публичный скин через Mojang, показывает текстуру / голову / модель, копирует UUID и скачивает исходный PNG. Исправлено перекрытие головы непрозрачной шапкой у legacy 64×32 скинов; сам PNG не преобразуется.
+- Waypoint Color считает Java Locator Bar color по нику или UUID: UUID hashCode, HSV brightness 0.9, float / round Java. 8 векторов сверены с реальным ColorHelper клиента 1.21.7; Notch #E66185. Есть HEX / RGB, цветной preview и копирование. Командные / team / plugin overrides отмечены в UI.
+- IGN Availability проверяет регистрацию: Taken / Not registered и время запроса. Отсутствие профиля не выдаётся за гарантию возможности занять ник; reserved / cooldown без authenticated API не определяются. 429 / сетевые ошибки остаются ошибками.
+- Добавлен Worker ES module с same-origin API и ограниченным PNG proxy; root Wrangler сохраняет public assets и SPA, добавляет main / ASSETS / API Worker first. Node preview использует общий handleApi. Зависимостей / токенов / базы данных нет. В workerd исправлена несовместимая redirect error настройка: теперь manual, 3xx не переходятся.
+- Пройдены 34 теста и реальные запросы Mojang в Node / workerd. Файл, скачанный в браузере, совпал с оригинальным texture SHA-256; копирование UUID / HEX проверено содержимым clipboard.
+- В браузере проверены занятый / незарегистрированный ник, валидация, локальный UUID / lookup ника, исправленная голова legacy-скина, поиск по Checkers, сохранение результатов между страницами и все три инструмента на 320 px без переполнения. Консоль чистая; Wrangler dry-run успешно собрал Worker с ASSETS и 10 статическими файлами.
+- Публикация разрешена явной командой пользователя.
+
 ## Категории General и Checkers — 2026-11-07
 
 - В sidebar добавлены заголовки категорий General и Checkers. Pack Builder и Colors & Formatting помещены в General; Checkers пока пустая, без новых инструментов и маршрутов.

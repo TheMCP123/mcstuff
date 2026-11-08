@@ -1,11 +1,15 @@
 import { mountColorsTool } from './colors-tool.js';
 import { setupToolSearch } from './tool-search.js';
+import { mountChecker } from './checkers.js';
 
 const paths = {
   package: '<path d="m12 3 9 5v8l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v8M7.5 5.5l9 5"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
   close: '<path d="m6 6 12 12M6 18 18 6"/>',
+  skin: '<path d="m8 3-5 3 3 5 2-1v11h8V10l2 1 3-5-5-3a4 4 0 0 1-8 0Z"/>',
+  waypoint: '<path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+  namecheck: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 12-4m2 3 2 2 4-4"/>',
   palette: '<path d="M12 3a9 9 0 0 0 0 18h1.1a2.4 2.4 0 0 0 1.7-4.1c-.9-.9-.3-2.4.9-2.4H18a3 3 0 0 0 3-3C21 6.8 17 3 12 3Z"/><circle cx="7.5" cy="10" r=".9"/><circle cx="10.5" cy="6.7" r=".9"/><circle cx="15" cy="7.5" r=".9"/><circle cx="6.8" cy="14.2" r=".9"/>',
 };
 
@@ -17,6 +21,9 @@ const pages = {
   home: { title: 'MCStuff' },
   builder: { title: 'Pack Builder', emptyText: 'This section is empty.' },
   colors: { title: 'Colors & Formatting' },
+  skin: { title: 'Skin Stealer' },
+  waypoint: { title: 'Waypoint Color' },
+  ign: { title: 'IGN Availability' },
 };
 
 const sounds = {
@@ -94,6 +101,7 @@ function showPage(page) {
   }
   stage.replaceChildren(view);
   if (page === 'colors') disposePage = mountColorsTool(view);
+  if (['skin', 'waypoint', 'ign'].includes(page)) disposePage = mountChecker(view, page);
 }
 
 function render(moveFocus = false) {
