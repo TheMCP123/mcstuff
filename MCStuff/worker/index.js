@@ -1,7 +1,7 @@
 import { normalizeUuid, validUsername } from '../public/checker-data.js';
 
 class ApiError extends Error {
-  constructor(status, code, message) { super(message); this.status = status; this.code = code; }
+  constructor(status, code, message, details = {}) { super(message); this.status = status; this.code = code; this.details = details; }
 }
 
 function json(data, status = 200) {
@@ -11,11 +11,12 @@ function json(data, status = 200) {
 async function upstream(url, fetcher, ttl = 0) {
   let response;
   try {
-    response = await fetcher(url, { headers: { Accept: 'application/json, image/png' }, redirect: 'manual', signal: AbortSignal.timeout(8000), ...(ttl ? { cf: { cacheTtl: ttl, cacheEverything: true } } : { cache: 'no-store' }) });
-  } catch { throw new ApiError(503, 'upstream_unavailable', 'Mojang could not be reached. Try again shortly.'); }
-  if (response.status === 429) throw new ApiError(429, 'rate_limited', 'Mojang is rate limiting lookups. Wait a minute and try again.');
+    const accept = new URL(url).hostname === 'textures.minecraft.net' ? 'image/png' : 'application/json';
+    response = await fetcher(url, { headers: { Accept: accept, 'User-Agent': 'MCStuff (+https://github.com/TheMCP123/mcstuff)' }, redirect: 'manual', signal: AbortSignal.timeout(5000), ...(ttl ? { cf: { cacheTtl: ttl, cacheEverything: true } } : { cache: 'no-store' }) });
+  } catch { throw new ApiError(503, 'upstream_unavailable', 'The profile service could not be reached. Try again shortly.'); }
+  if (response.status === 429) throw new ApiError(429, 'rate_limited', 'The lookup service is rate limiting requests. Wait a minute and try again.');
   if (response.status === 404 || response.status === 204) return null;
-  if (!response.ok) throw new ApiError(502, 'upstream_error', 'Mojang could not complete this lookup. Try again shortly.');
+  if (!response.ok) throw new ApiError(502, 'upstream_error', 'The profile service could not complete this lookup. Try again shortly.', { upstreamStatus: response.status, upstreamHost: new URL(url).hostname });
   return response;
 }
 
@@ -33,9 +34,36 @@ function profileIdentity(data, expectedId) {
   return { id, name: data.name };
 }
 
-async function nameLookup(name, fetcher) {
-  const response = await upstream(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`, fetcher);
-  return response ? profileIdentity(await readJson(response)) : null;
+async function playerDbLookup(value, fetcher, expectedId) {
+  const response = await upstream(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(value)}`, fetcher);
+  if (!response) throw new ApiError(503, 'profile_unavailable', 'The official profile service is unavailable and no cached profile was found.');
+  const body = await readJson(response);
+  const data = body?.data?.player;
+  if (body.code !== 'player.found' || !data) throw new ApiError(502, 'invalid_response', 'The backup profile service returned an invalid profile.');
+  const identity = profileIdentity({ id: data.id, name: data.username }, expectedId);
+  if (validUsername(value) && identity.name.toLowerCase() !== value.toLowerCase()) throw new ApiError(502, 'invalid_response', 'The cached profile does not match this username. Try its UUID instead.');
+  const cachedTime = Number(data.meta?.cached_at) * 1000;
+  const cachedAt = Number.isFinite(cachedTime) && cachedTime > 0 && cachedTime <= Date.now() + 300000 ? new Date(cachedTime).toISOString() : null;
+  return { ...identity, properties: data.properties, source: 'PlayerDB', cachedAt };
+}
+
+async function nameLookup(name, fetcher, allowCached = false) {
+  const path = `/minecraft/profile/lookup/name/${encodeURIComponent(name)}`;
+  let failure;
+  for (const host of ['api.minecraftservices.com', 'api.mojang.com']) {
+    try {
+      const response = await upstream(`https://${host}${path}`, fetcher);
+      return response ? profileIdentity(await readJson(response)) : null;
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status === 429) throw error;
+      failure = error;
+    }
+  }
+  if (allowCached) {
+    const data = await playerDbLookup(name, fetcher);
+    return { id: data.id, name: data.name, source: data.source, cachedAt: data.cachedAt };
+  }
+  throw failure;
 }
 
 function skinFromProfile(data) {
@@ -72,7 +100,7 @@ export async function handleApi(request, fetcher = fetch) {
       response = new Response(bytes, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400, immutable', 'X-Content-Type-Options': 'nosniff', 'Content-Disposition': 'inline' } });
     } else if (kind === 'uuid') {
       if (!validUsername(value)) throw new ApiError(400, 'invalid_name', 'Use 1–16 letters, numbers or underscores.');
-      const profile = await nameLookup(value, fetcher);
+      const profile = await nameLookup(value, fetcher, true);
       if (!profile) throw new ApiError(404, 'player_not_found', 'No public Java profile was found for this username.');
       response = json(profile);
     } else if (kind === 'ign') {
@@ -83,17 +111,25 @@ export async function handleApi(request, fetcher = fetch) {
       let id = normalizeUuid(value);
       if (!id) {
         if (!validUsername(value)) throw new ApiError(400, 'invalid_input', 'Enter a Java username or a valid UUID.');
-        const identity = await nameLookup(value, fetcher);
+        const identity = await nameLookup(value, fetcher, true);
         if (!identity) throw new ApiError(404, 'player_not_found', 'No public Java profile was found for this username.');
         id = identity.id;
       }
-      const session = await upstream(`https://sessionserver.mojang.com/session/minecraft/profile/${id.replaceAll('-', '')}`, fetcher, 60);
-      if (!session) throw new ApiError(404, 'player_not_found', 'No public Java profile was found for this UUID.');
-      const data = await readJson(session);
-      response = json({ ...profileIdentity(data, id), skin: skinFromProfile(data), checkedAt: new Date().toISOString() });
+      let data;
+      try {
+        const session = await upstream(`https://sessionserver.mojang.com/session/minecraft/profile/${id.replaceAll('-', '')}`, fetcher, 60);
+        if (!session) throw new ApiError(404, 'player_not_found', 'No public Java profile was found for this UUID.');
+        data = await readJson(session);
+        profileIdentity(data, id);
+      } catch (error) {
+        if (!(error instanceof ApiError) || [404, 429].includes(error.status)) throw error;
+        data = await playerDbLookup(id, fetcher, id);
+        if (!Array.isArray(data.properties)) throw new ApiError(502, 'skin_unavailable', 'The cached profile has no skin data. Try again shortly.');
+      }
+      response = json({ ...profileIdentity(data, id), skin: skinFromProfile(data), source: data.source || 'Mojang', cachedAt: data.cachedAt || null, checkedAt: new Date().toISOString() });
     }
   } catch (error) {
-    response = error instanceof ApiError ? json({ error: error.code, message: error.message }, error.status) : json({ error: 'lookup_failed', message: 'The lookup could not be completed. Try again shortly.' }, 502);
+    response = error instanceof ApiError ? json({ error: error.code, message: error.message, ...error.details }, error.status) : json({ error: 'lookup_failed', message: 'The lookup could not be completed. Try again shortly.' }, 502);
   }
   return request.method === 'HEAD' ? new Response(null, { status: response.status, headers: response.headers }) : response;
 }

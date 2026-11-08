@@ -24,7 +24,7 @@ test('IGN returns a taken profile from the official API and never fetches textur
   assert.equal(body.registered, true);
   assert.deepEqual(body.profile, { id, name: 'Notch' });
   assert.equal(calls.length, 1);
-  assert.equal(calls[0], 'https://api.mojang.com/users/profiles/minecraft/notch');
+  assert.equal(calls[0], 'https://api.minecraftservices.com/minecraft/profile/lookup/name/notch');
   assert.ok(Number.isFinite(Date.parse(body.checkedAt)));
 });
 
@@ -126,4 +126,72 @@ test('HEAD strips the body while unknown API routes stay JSON and assets pass th
   assert.match(unknown.headers.get('content-type'), /application\/json/);
   const asset = await worker.fetch(request('/styles.css'), { ASSETS: { fetch: async req => new Response(new URL(req.url).pathname) } });
   assert.equal(await asset.text(), '/styles.css');
+});
+
+test('name lookups recover from an official host 403 using the second official endpoint', async () => {
+  const calls = [];
+  const result = await handleApi(request('/api/ign/Notch'), async url => {
+    calls.push(url);
+    return calls.length === 1 ? new Response(null, { status: 403 }) : reply(identity);
+  });
+  assert.equal(result.status, 200);
+  assert.equal((await result.json()).registered, true);
+  assert.deepEqual(calls, ['https://api.minecraftservices.com/minecraft/profile/lookup/name/Notch', 'https://api.mojang.com/minecraft/profile/lookup/name/Notch']);
+});
+
+test('a 403 then authoritative 404 is unregistered; a 429 stops retries', async () => {
+  let calls = 0;
+  const result = await handleApi(request('/api/ign/UnusedName123'), async () => new Response(null, { status: ++calls === 1 ? 403 : 404 }));
+  assert.equal((await result.json()).registered, false);
+  calls = 0;
+  const limited = await handleApi(request('/api/ign/Notch'), async () => { calls++; return new Response(null, { status: 429 }); });
+  assert.equal(limited.status, 429);
+  assert.equal(calls, 1);
+});
+
+test('IGN never converts a failed official lookup into a cached availability result', async () => {
+  const calls = [];
+  const result = await handleApi(request('/api/ign/Notch'), async url => { calls.push(url); return new Response(null, { status: 403 }); });
+  assert.equal(result.status, 502);
+  const body = await result.json();
+  assert.equal(body.registered, undefined);
+  assert.equal(body.upstreamStatus, 403);
+  assert.ok(calls.every(url => !url.includes('playerdb.co')));
+});
+
+const cachedPlayer = (overrides = {}) => ({ code: 'player.found', data: { player: { id, username: 'Notch', properties: textures({ url: `https://textures.minecraft.net/texture/${hash}` }).properties, meta: { cached_at: 1700000000 }, ...overrides } } });
+
+test('skin lookup recovers from session-server blocking with a verified cached profile', async () => {
+  const calls = [];
+  const result = await handleApi(request('/api/player/Notch'), async url => {
+    calls.push(url);
+    if (url.includes('minecraftservices.com')) return reply(identity);
+    if (url.includes('sessionserver.mojang.com')) return new Response(null, { status: 403 });
+    assert.equal(url, `https://playerdb.co/api/player/minecraft/${id}`);
+    return reply(cachedPlayer());
+  });
+  const body = await result.json();
+  assert.equal(result.status, 200);
+  assert.equal(body.id, id);
+  assert.equal(body.skin.url, `/api/skin/${hash}`);
+  assert.equal(body.source, 'PlayerDB');
+  assert.equal(body.cachedAt, '2023-11-14T22:13:20.000Z');
+  assert.equal(calls.length, 3);
+});
+
+test('waypoint name lookup can use a marked cached identity when both official hosts fail', async () => {
+  const result = await handleApi(request('/api/uuid/Notch'), async url => url.includes('playerdb.co') ? reply(cachedPlayer()) : new Response(null, { status: 503 }));
+  const body = await result.json();
+  assert.equal(result.status, 200);
+  assert.equal(body.source, 'PlayerDB');
+  assert.equal(body.id, id);
+});
+
+test('backup data must match the requested player and must actually contain skin data', async () => {
+  for (const overrides of [{ id: '0'.repeat(32) }, { properties: undefined }]) {
+    const result = await handleApi(request(`/api/player/${id}`), async url => url.includes('playerdb.co') ? reply(cachedPlayer(overrides)) : new Response(null, { status: 403 }));
+    assert.equal(result.status, 502);
+  }
+  const wrongName = await handleApi(request('/api/uuid/Notch'), async url => url.includes('playerdb.co') ? reply(cachedPlayer({ username: 'OtherPlayer' })) : new Response(null, { status: 403 }));
+  assert.equal(wrongName.status, 502);
 });

@@ -1,7 +1,8 @@
 import { normalizeUuid, validUsername, waypointColor } from './checker-data.js';
+import { createSkinPreview } from './skin-preview.js';
 
 const tools = {
-  skin: { label: 'Java username or UUID', placeholder: 'e.g. Notch', button: 'Find skin', help: 'Look up a player’s current public Java Edition skin.' },
+  skin: { label: 'Java username or UUID', placeholder: 'e.g. Notch', button: 'Find skin', help: 'Look up a player’s public Java Edition skin.' },
   waypoint: { label: 'Java username or UUID', placeholder: 'Username or UUID', button: 'Find color', help: 'Default Locator Bar marker color. A UUID can be checked without a network request.' },
   ign: { label: 'Java username', placeholder: '3–16 letters, numbers or underscores', button: 'Check name', help: 'Check whether a public Java Edition profile uses this name.' },
 };
@@ -36,6 +37,13 @@ export function mountChecker(host, kind) {
   let requestId = 0;
   let disposed = false;
   let feedbackTimer;
+  let disposePreview = () => {};
+
+  function clearResult() {
+    disposePreview();
+    disposePreview = () => {};
+    result.replaceChildren();
+  }
 
   function report(message, error = false) {
     status.textContent = message;
@@ -73,56 +81,34 @@ export function mountChecker(host, kind) {
   function playerInfo(data) {
     const info = element('div', 'checker-player-info');
     info.append(element('h2', '', data.name || 'UUID waypoint'), copyValue('UUID', data.id));
+    if (data.source === 'PlayerDB') {
+      const date = data.cachedAt ? ` · ${new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(data.cachedAt))}` : '';
+      info.append(element('p', 'field-help', `Cached profile via PlayerDB${date}`));
+    }
     return info;
   }
 
   function renderSkin(data) {
     const info = playerInfo(data);
     if (!data.skin) {
-      info.append(element('p', 'field-help', 'This player has no custom skin set.'));
+      info.append(element('p', 'field-help', 'No custom skin was found in this profile.'));
       result.append(info);
       return;
     }
     const layout = element('div', 'skin-result');
-    const preview = element('div', 'skin-texture');
-    const image = element('img');
-    image.alt = `${data.name} skin texture`;
-    image.src = data.skin.url;
-    const head = element('canvas', 'skin-head');
-    head.width = 64;
-    head.height = 64;
-    head.setAttribute('role', 'img');
-    head.setAttribute('aria-label', `${data.name} skin head`);
+    const preview = createSkinPreview(data);
+    disposePreview = preview.dispose;
     const download = element('a', 'action-button', 'Download skin PNG');
     download.href = data.skin.url;
     download.download = `${data.name}.png`;
-    image.addEventListener('load', () => {
-      if (disposed) return;
-      const context = head.getContext('2d');
-      if (!context) return;
-      context.imageSmoothingEnabled = false;
-      context.clearRect(0, 0, 64, 64);
-      context.drawImage(image, 8, 8, 8, 8, 0, 0, 64, 64);
-      const hat = document.createElement('canvas');
-      hat.width = hat.height = 8;
-      const hatContext = hat.getContext('2d');
-      if (hatContext) {
-        hatContext.drawImage(image, 40, 8, 8, 8, 0, 0, 8, 8);
-        const pixels = hatContext.getImageData(0, 0, 8, 8).data;
-        const opaqueLegacyHat = image.naturalHeight === 32 && pixels.every((channel, index) => index % 4 !== 3 || channel >= 128);
-        if (!opaqueLegacyHat) context.drawImage(hat, 0, 0, 8, 8, 0, 0, 64, 64);
-      }
-    });
-    image.addEventListener('error', () => {
+    preview.element.querySelector('.skin-texture-details img').addEventListener('error', () => {
       if (disposed) return;
       download.removeAttribute('href');
       download.setAttribute('aria-disabled', 'true');
-      report('The skin preview could not load. Run the lookup again to retry.', true);
+      report('The skin texture could not be loaded. Run the lookup again to retry.', true);
     });
-    preview.append(image);
-    info.prepend(head);
     info.append(element('p', 'field-help', `${data.skin.model} model · Original PNG from Mojang`), download);
-    layout.append(preview, info);
+    layout.append(preview.element, info);
     result.append(layout);
   }
 
@@ -136,10 +122,17 @@ export function mountChecker(host, kind) {
     info.append(copyValue('HEX', color.hex), element('p', 'field-help', `RGB ${color.rgb.join(', ')}`));
     layout.append(swatch, info);
     const preview = element('div', 'locator-preview');
-    const marker = element('span', 'locator-marker');
-    marker.style.backgroundColor = color.hex;
-    preview.setAttribute('aria-label', 'Marker color preview');
-    preview.append(marker);
+    preview.setAttribute('role', 'img');
+    preview.setAttribute('aria-label', `Locator Bar marker sizes in ${color.hex}`);
+    preview.append(element('div', 'locator-track'));
+    for (const [distance, size] of [['Near', 14], ['Mid', 10], ['Far', 6]]) {
+      const sample = element('span', 'locator-sample');
+      const marker = element('i', 'locator-marker');
+      marker.style.backgroundColor = color.hex;
+      marker.style.width = marker.style.height = `${size}px`;
+      sample.append(marker, element('span', '', distance));
+      preview.append(sample);
+    }
     result.append(layout, preview, element('p', 'field-help', 'Default Java Edition color. Teams, /waypoint commands and server plugins can override it.'));
   }
 
@@ -154,7 +147,7 @@ export function mountChecker(host, kind) {
   }
 
   function render(data) {
-    result.replaceChildren();
+    clearResult();
     ({ skin: renderSkin, waypoint: renderWaypoint, ign: renderIgn })[kind](data);
   }
 
@@ -186,7 +179,7 @@ export function mountChecker(host, kind) {
     cancel();
     state.input = input.value;
     state.result = null;
-    result.replaceChildren();
+    clearResult();
     input.removeAttribute('aria-invalid');
     report('');
   });
@@ -204,11 +197,11 @@ export function mountChecker(host, kind) {
     input.removeAttribute('aria-invalid');
     state.input = value;
     state.result = null;
-    result.replaceChildren();
+    clearResult();
     const activeController = new AbortController();
     controller = activeController;
     const active = requestId;
-    const timeout = setTimeout(() => activeController.abort(), 20000);
+    const timeout = setTimeout(() => activeController.abort(), 30000);
     submit.disabled = true;
     submit.textContent = 'Checking…';
     form.setAttribute('aria-busy', 'true');
@@ -232,5 +225,5 @@ export function mountChecker(host, kind) {
     }
   });
   if (state.result) render(state.result);
-  return () => { disposed = true; cancel(); clearTimeout(feedbackTimer); };
+  return () => { disposed = true; cancel(); disposePreview(); clearTimeout(feedbackTimer); };
 }

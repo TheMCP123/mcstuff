@@ -1,5 +1,15 @@
 # История изменений
 
+## Исправление edge lookup, готовые иконки и 3D — 2026-11-07
+
+- На публичном Worker воспроизведены 502 для поиска ника и профиля по UUID при рабочей выдаче PNG. Старый users/profiles lookup заменён современным Minecraft Services endpoint с официальным резервом; добавлена диагностическая информация об upstream-ошибке.
+- Для отказов профиля Skin / Waypoint добавлен PlayerDB fallback с проверкой идентичности, texture URL и наличия данных. Источник / дата кэша видны в UI. IGN не использует кэш для утверждения доступности; 404 / ошибки / 429 разделены, rate limit не обходится.
+- Самодельные UI icons заменены оригинальными Lucide 1.70.0: package-plus, palette, scan-face, map-pin, user-round-check и общие controls. SVG / лицензии хранятся локально; бренд сохранён.
+- Skin Stealer получил реальное вращаемое 3D-превью на официальном skinview3d 3.4.2 bundle, Front / Back / Reset, drag / zoom / keyboard, исходную текстуру в details и 2D fallback без WebGL. Добавлена очистка renderer / observer / listeners. Исходный PNG не меняется.
+- Waypoint preview показывает три размера маркера Near / Mid / Far с вычисленным цветом. Все ресурсы / API относительные; текущий публичный домен записан в правилах как временный.
+- Пройдены 40 тестов, включая отказы официальных hosts, резервные профили, несовпадение UUID / имени и запрет ложного Not registered. Локально проверены реальный 3D renderer, Front / Back, иконки, HTTP lookup и вёрстка 320 px. Финальная проверка API выполняется на опубликованном Worker.
+- Пуш разрешён явной командой пользователя.
+
 ## Рабочие Checkers — 2026-11-07
 
 - В Checkers добавлены Skin Stealer, Waypoint Color и IGN Availability с отдельными маршрутами, контурными иконками и поисковыми aliases. Pack Builder остаётся каркасом; Colors & Formatting сохранён.
