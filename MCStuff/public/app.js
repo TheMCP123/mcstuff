@@ -2,13 +2,14 @@ import { iconMarkup } from './icons.js';
 import { mountColorsTool } from './colors-tool.js';
 import { setupToolSearch } from './tool-search.js';
 import { mountChecker } from './checkers.js';
+import { mountPackBuilder } from './pack-builder.js';
 
 for (const element of document.querySelectorAll('[data-icon]')) {
   element.innerHTML = iconMarkup(element.dataset.icon);
 }
 const pages = {
   home: { title: 'MCStuff' },
-  builder: { title: 'Pack Builder', emptyText: 'This section is empty.' },
+  builder: { title: 'Pack Builder' },
   colors: { title: 'Colors & Formatting' },
   skin: { title: 'Skin Stealer' },
   waypoint: { title: 'Waypoint Color' },
@@ -90,6 +91,7 @@ function showPage(page) {
   }
   stage.replaceChildren(view);
   if (page === 'colors') disposePage = mountColorsTool(view);
+  if (page === 'builder') disposePage = mountPackBuilder(view);
   if (['skin', 'waypoint', 'ign'].includes(page)) disposePage = mountChecker(view, page);
 }
 

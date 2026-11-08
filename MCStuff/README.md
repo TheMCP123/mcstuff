@@ -6,7 +6,7 @@
 
 - Главная MCStuff со ссылкой на рабочий инструмент.
 - Colors & Formatting (`#colors`) — локальный генератор сообщений и справочник цветов / форматирования.
-- Pack Builder (`#builder`) — каркас без интеграции Modrinth, скачивания или подбора зависимостей.
+- Pack Builder (`#builder`) — рабочий сборщик Plugins / Mods / Resource packs / Data packs: поиск Modrinth / SpigotMC через Spiget, автоматические обязательные зависимости, выбор файлов, отдельные загрузки и ZIP. CurseForge adapter подготовлен, нужен серверный ключ.
 - В sidebar две категории: General с Pack Builder / Colors & Formatting и Checkers со Skin Stealer (`#skin`), Waypoint Color (`#waypoint`), IGN Availability (`#ign`). Категории — заголовки групп, инструменты — отдельные страницы.
 - Поиск прямо в sidebar: ввод фильтрует существующее меню, подходящие пункты плавно перемещаются / появляются. Отдельного окна и дублирующей выдачи нет; открытый инструмент не меняется до выбора.
 
@@ -60,7 +60,10 @@ Frontend — buildless HTML / CSS / JavaScript ES modules. Для публичн
 - `public/skin-preview.js` — ленивое 3D-превью, вращение / Front / Back / Reset, resize, остановка и освобождение рендера, 2D fallback.
 - `public/icons.js`, `public/icons/lucide.svg` — готовые оригинальные Lucide 1.70.0 SVG; лицензия ISC / Feather MIT рядом.
 - `public/vendor/skinview3d/` — официальный UMD skinview3d 3.4.2 (477198 байт), Three.js r156, skinview-utils 0.7.1; исходные лицензии включены. Установка npm / build для preview не требуется; bundle загружается только при показе скина.
-- `worker/index.js` — публичный Mojang API adapter и PNG proxy с фиксированными разрешёнными адресами; тот же handleApi использует Node preview.
+- `worker/index.js` — router Checkers / Builder, Mojang adapter и PNG proxy; Node использует тот же handleApi.
+- `worker/pack-api.js` — Modrinth / Spiget / CurseForge adapters, metadata / search / versions / dependency resolution / потоковая загрузка.
+- `public/pack-builder.js`, `pack-data.js`, `pack-export.js`, `pack-zip.js` — UI, модель / draft, integrity / export и ZIP STORE без npm-зависимостей.
+- `../.dev.vars.example` — только имя optional server secret; реальный .dev.vars игнорируется Git.
 - `public/tool-catalog.js` — реестр инструментов с полем category, aliases, нормализация / раскладка, ограниченное расстояние редактирования, ранжирование; `searchTools(query, catalog?)` не меняет исходный каталог.
 - `public/tool-search.js` — фильтрация / сортировка внутри групп меню, скрытие / восстановление пустых категорий, анимации перемещения / появления, очистка, клавиатура и фокус, синхронизация навигационной подсветки.
 - `public/favicon.svg` — знак с зелёным акцентом.
@@ -93,7 +96,7 @@ npm test
 
 Проверка настоящего Cloudflare runtime из корня: `npx wrangler@4.156.1 dev --local --port 4174 --ip 127.0.0.1`. Node preview вызывает общий handleApi; одна его проверка не заменяет workerd. Пройдены реальные HTTP lookup в workerd: профиль / UUID, занятый и незарегистрированный ник, API 404 и static assets 200. Скачанный через браузер Notch.png (64×32, 526 байт) совпал с оригинальным Mojang texture hash SHA-256. Тесты покрывают 8 Java color vectors, validation, API / 429 / redirects / malformed responses, allowlist, PNG и маршрутизацию.
 
-Пройдены 52 теста: форматирование / цвета / Unicode / JSON, aliases, опечатки и перестановки букв, нормализация Unicode / пунктуации, смысловые запросы, русские aliases / раскладка, релевантность, неизвестные запросы и отсутствие мутаций каталога. Для inline-поиска в браузере проверены фильтрация самого меню без dialog, сохранение открытого текста, неизвестный запрос / Enter, очистка и исходный порядок, переходы / клик в строку / стрелки / Enter, 320 px без переполнения, Tab без скрытых результатов, два Escape и возврат фокуса. Подсветка корректно исчезает / возвращается при фильтрации, консоль без ошибок / предупреждений, title MCStuff. Предыдущая проверка генератора подтвердила clipboard, градиент / стили / JSON, невалидный HEX и внутреннюю прокрутку таблиц.
+Пройдены 76 тестов: форматирование / цвета / Unicode / JSON, aliases, опечатки и перестановки букв, нормализация Unicode / пунктуации, смысловые запросы, русские aliases / раскладка, релевантность, неизвестные запросы и отсутствие мутаций каталога. Для inline-поиска в браузере проверены фильтрация самого меню без dialog, сохранение открытого текста, неизвестный запрос / Enter, очистка и исходный порядок, переходы / клик в строку / стрелки / Enter, 320 px без переполнения, Tab без скрытых результатов, два Escape и возврат фокуса. Подсветка корректно исчезает / возвращается при фильтрации, консоль без ошибок / предупреждений, title MCStuff. Предыдущая проверка генератора подтвердила clipboard, градиент / стили / JSON, невалидный HEX и внутреннюю прокрутку таблиц.
 
 Переносимая сборка — исходники public и worker, документация, MIT и корневой конфиг с сохранённой структурой MCStuff. Один статический public не обеспечивает сетевые Checkers. Git-метаданные, зависимости, кэши и секреты в архив не включать. Подготовка архива не является публикацией.
 
@@ -115,6 +118,22 @@ npm test
 
 ## Дальше
 
-Следующий крупный этап — Pack Builder: Modrinth, версии / платформы, совместимые файлы, зависимости и экспорт. Точный контракт ещё не утверждён; не подменять его макетами или фиктивными результатами. Состав ресурсов Minecraft уточняется отдельно.
+Первая версия Pack Builder реализована. Следующие изменения — по обратной связи пользователя; не добавлять обещания будущих функций в интерфейс.
 
 Проект распространяется под MIT; внешние материалы сохраняют свои условия. Подробная история решений — CHANGELOG.md, постоянные требования — AGENTS.md.
+
+## Pack Builder v1
+
+Четыре типа: Plugins (Paper / Purpur / Spigot / Bukkit / Folia / Velocity / BungeeCord), Mods (Fabric / NeoForge / Forge / Quilt), Resource packs и Data packs (Vanilla). Minecraft releases запрашиваются у Modrinth при загрузке, default — самый новый по дате API. Фильтры не меняют тёмный layout / темы. Search — Modrinth или все доступные каталоги, SpigotMC только для Plugins; query / сортировка / Load more / pre-release files. SpigotMC использует community [Spiget](https://spiget.org/about/), не официальный API. Tested versions проекта не подтверждают конкретный файл: Compatibility unverified, зависимости нужно проверить вручную.
+
+Добавление выбирает новый совместимый release; другие совместимые версии доступны у root в списке. Обязательные зависимости Modrinth / CurseForge добавляются рекурсивно, optional / embedded не устанавливаются, pinned IDs учитываются. Конфликты версий / incompatible dependencies / дубли filename или названия из разных каталогов блокируются. Смена версии атомарная; используемую зависимость нельзя удалить отдельно, orphan automatic dependencies удаляются с root. До 50 проектов; один dependency graph до 16 узлов / 8 уровней / 44 upstream-запросов. Циклические зависимости — ошибка.
+
+Draft в localStorage mcstuff-pack-v1 содержит выбранный контекст / имя / metadata без ключей, иконок, URLs файлов или binary. Внутри сессии отдельные выборки по type / mc / loader, активный draft восстанавливается после reload с валидацией. Отмена поиска / ухода не применяет поздние ответы. Name / Add / version / remove защищены от изменения в ходе ZIP download.
+
+Каждый файл можно скачать отдельно. Download ZIP скачивает максимум два файла одновременно, проверяет ZIP/JAR magic, размер и SHA-512 / SHA-1, затем сохраняет исходные байты в plugins/, mods/, resourcepacks/ или datapacks/. ZIP STORE UTF-8 / CRC-32, manifest mcstuff-pack.json. Не скачавшиеся / внешние / запрещённые автором файлы перечислены в MANUAL_DOWNLOADS.txt с реальными source links; UI показывает сколько включено и сколько требует ручной загрузки. При нуле файлов ZIP не создаётся для пользователя. Cancel не выдаёт partial archive. Ограничения v1: 64MB / файл, 128MB / ZIP; большие файлы нужно брать на source page. Mods ZIP не является .mrpack / готовой установкой launcher, loader / configs / assets Minecraft не включаются. Export list — JSON manifest, импорта в v1 нет.
+
+API GET / HEAD /api/builder/meta, /search, /versions, /download; POST /api/builder/resolve с same-origin JSON до 16KB. Search принимает type / mc / loader / q / source / sort / page; versions / download — source / project / version плюс контекст. Произвольные URL клиента не используются: Worker получает канонический файл из каталога, проверяет фиксированные CDN и каждый redirect. Proxy потоковый, x-api-key не передаётся на CDN. JSON timeout 8s / общий 45s, partial search сохраняет живые источники.
+
+CurseForge пока без ключа по ответу пользователя: реализован adapter официального [API](https://docs.curseforge.com/rest-api/), source option честно показывает API key required. Нужен secret CURSEFORGE_API_KEY в Cloudflare Worker; локально — root .dev.vars (образец .dev.vars.example). Ключ не вводится в браузер и не попадает в Git / manifests / логи. Классы Minecraft ищутся через categories, Forge / Fabric / Quilt / NeoForge — по API enum; allowModDistribution:false / отсутствующий downloadUrl оставляет ручную загрузку. Live CurseForge без ключа не проверен; контракт и ограничения проверены фикстурами.
+
+Проверены реальные Modrinth поиски / resolve четырёх типов и Spiget resources. В Node и workerd получены совместимые plugin / mod / resource-pack / data-pack файлы. Реальный ZIP Mod Menu + Fabric API + Text Placeholder API (3 658 281 bytes) открыт независимым .NET ZIP reader, SHA-512 всех трёх JAR совпали с API; браузерный экспорт показал 3 included. Публикация выполняется по отдельной команде пользователя; новые production-маршруты проверяются после успешного Workers Build.

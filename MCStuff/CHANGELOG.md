@@ -1,5 +1,15 @@
 # История изменений
 
+## Pack Builder: первая рабочая версия — 2026-11-07
+
+- Заглушка #builder заменена сборщиком Plugins / Mods / Resource packs / Data packs. Добавлены реальные каталоги, актуальные Minecraft releases, платформы, поиск / сортировка / пагинация / pre-release files, список выбранных файлов / версий и восстановление draft.
+- Worker adapters: Modrinth v2, SpigotMC через community Spiget, официальный CurseForge v1 с серверным ключом. Пользователь подтвердил отсутствие ключа и попросил подготовить подключение; CF не имитирует доступность. Уважены distribution opt-out / внешние и premium resources; Spigot compatibility / dependencies явно unverified.
+- Автоматические обязательные зависимости, pinned versions, атомарная смена версии, защита используемых библиотек, очистка orphan dependencies, конфликты версий / несовместимостей / filenames / одинаковых проектов разных каталогов. Поиск не смешивает контексты.
+- Отдельные загрузки / ZIP STORE с UTF-8 и CRC-32, оригинальные байты, SHA512 / SHA1 / size / ZIP magic, до двух downloads, отмена. Папки по типу, mcstuff-pack.json, MANUAL_DOWNLOADS.txt и честный partial result. 50 проектов / 64MB file / 128MB archive.
+- Добавлены /api/builder meta / search / versions / resolve / download, потоковый allowlisted proxy / bounded redirects / timeout / dependency limits / origin validation. API key только на CF API, не на CDN. Node preview поддерживает POST, потоковый ответ, правильный localhost origin и root .dev.vars.
+- Новые public pack-* модули, worker/pack-api.js, два test suites и .dev.vars.example; новых npm runtime-зависимостей нет. Правила / README обновлены; новый запрос заменяет прежний запрет на Modrinth, публикация по-прежнему требует отдельной команды.
+- Пройдены 76 тестов и syntax check, Wrangler dry-run. Реальные API четырёх типов / зависимости / plugin download проверены в Node и workerd. ZIP Mod Menu + две библиотеки независимо открыт .NET, три исходных SHA512 совпали. В браузере проверены поиск / добавление / смена версии, защита зависимостей, ZIP, восстановление draft после reload и раздельные контексты. На desktop / 320px переполнения нет; product copy полностью английский. Первая версия подготовлена к публикации; пользователь разрешил её отдельной командой «Пуш». Production API проверяются после Workers Build.
+
 ## Текстуры Waypoint, IGN и единые отступы — 2026-11-07
 
 - Шкала и четыре метки заменены оригинальными PNG Minecraft Java 26.1.1 после проверки SHA-1 официального клиента. PNG неизменны, авторство / provenance / SHA-256 в NOTICE. Сохранены nine-slice геометрия, sRGB tint, обводка / альфа.

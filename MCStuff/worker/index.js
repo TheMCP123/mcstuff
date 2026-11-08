@@ -1,4 +1,5 @@
 import { normalizeUuid, validUsername } from '../public/checker-data.js';
+import { handleBuilderApi } from './pack-api.js';
 
 class ApiError extends Error {
   constructor(status, code, message, details = {}) { super(message); this.status = status; this.code = code; this.details = details; }
@@ -99,8 +100,9 @@ function skinFromProfile(data) {
   } catch { throw new ApiError(502, 'invalid_skin', 'Mojang returned an invalid skin texture.'); }
 }
 
-export async function handleApi(request, fetcher = fetch) {
+export async function handleApi(request, fetcher = fetch, env = {}) {
   const url = new URL(request.url);
+  if (url.pathname === '/api/builder' || url.pathname.startsWith('/api/builder/')) return handleBuilderApi(request, env, fetcher);
   if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
   let response;
   try {
@@ -162,6 +164,6 @@ export async function handleApi(request, fetcher = fetch) {
 export default {
   fetch(request, env) {
     const path = new URL(request.url).pathname;
-    return path === '/api' || path.startsWith('/api/') ? handleApi(request) : env.ASSETS.fetch(request);
+    return path === '/api' || path.startsWith('/api/') ? handleApi(request, fetch, env) : env.ASSETS.fetch(request);
   },
 };
