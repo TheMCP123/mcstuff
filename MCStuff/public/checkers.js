@@ -137,10 +137,15 @@ export function mountChecker(host, kind) {
   }
 
   function renderIgn(data) {
-    result.append(element('h2', '', data.name), element('p', `ign-status ${data.registered ? 'is-taken' : 'is-unregistered'}`, data.registered ? 'Taken' : 'Not registered'));
+    const label = data.verification === 'cached' ? 'Registered (cached)' : data.registered === null ? 'No public profile found' : data.registered ? 'Taken' : 'Not registered';
+    result.append(element('h2', '', data.name), element('p', `ign-status ${data.registered ? 'is-taken' : 'is-unregistered'}`, label));
     if (data.registered) {
-      result.append(element('p', 'field-help', `This name is registered to ${data.profile.name}.`), copyValue('UUID', data.profile.id));
-    } else result.append(element('p', 'field-help', 'No public Java profile found. This does not guarantee the name can be claimed: Mojang may reserve it or hold it in a cooldown.'));
+      result.append(element('p', 'field-help', data.verification === 'cached' ? `PlayerDB last recorded this name as registered to ${data.profile.name}. Live registration could not be confirmed.` : `This name is registered to ${data.profile.name}.`), copyValue('UUID', data.profile.id));
+    } else result.append(element('p', 'field-help', data.registered === null ? 'The backup service found no profile. Live Mojang registration could not be confirmed; this is not a guarantee the name can be claimed.' : 'No public Java profile found. This does not guarantee the name can be claimed: Mojang may reserve it or hold it in a cooldown.'));
+    if (data.source === 'PlayerDB') {
+      const date = data.cachedAt ? ` · ${new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(data.cachedAt))}` : '';
+      result.append(element('p', 'field-help', `Source: PlayerDB${date}`));
+    }
     const time = element('time', 'checker-checked', `Checked ${new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(data.checkedAt))}`);
     time.dateTime = data.checkedAt;
     result.append(time);
@@ -162,7 +167,8 @@ export function mountChecker(host, kind) {
     try { data = await response.json(); } catch { throw new Error('The lookup service returned an invalid response. Try again shortly.'); }
     if (!response.ok) throw new Error(data.message || 'This lookup could not be completed.');
     if (kind === 'ign') {
-      if (typeof data.registered !== 'boolean' || !validUsername(data.name, 3) || !Number.isFinite(Date.parse(data.checkedAt)) || (data.registered && !normalizeUuid(data.profile?.id))) throw new Error('The lookup returned an invalid response.');
+      const unconfirmed = data.registered === null && data.verification === 'unconfirmed' && data.source === 'PlayerDB';
+      if ((!unconfirmed && typeof data.registered !== 'boolean') || !validUsername(data.name, 3) || !Number.isFinite(Date.parse(data.checkedAt)) || (data.registered && !normalizeUuid(data.profile?.id))) throw new Error('The lookup returned an invalid response.');
     } else if (!normalizeUuid(data.id) || (data.skin && !/^\/api\/skin\/[a-f\d]{64}$/.test(data.skin.url))) throw new Error('The lookup returned an invalid response.');
     return data;
   }

@@ -8,15 +8,15 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(status === 429 ? { 'Retry-After': '60' } : {}) } });
 }
 
-async function upstream(url, fetcher, ttl = 0) {
+async function upstream(url, fetcher, ttl = 0, options = {}) {
   let response;
   try {
     const accept = new URL(url).hostname === 'textures.minecraft.net' ? 'image/png' : 'application/json';
-    response = await fetcher(url, { headers: { Accept: accept, 'User-Agent': 'MCStuff (+https://github.com/TheMCP123/mcstuff)' }, redirect: 'manual', signal: AbortSignal.timeout(5000), ...(ttl ? { cf: { cacheTtl: ttl, cacheEverything: true } } : { cache: 'no-store' }) });
+    response = await fetcher(url, { method: options.method || 'GET', ...(options.body ? { body: options.body } : {}), headers: { Accept: accept, 'User-Agent': 'MCStuff (+https://github.com/TheMCP123/mcstuff)', ...options.headers }, redirect: 'manual', signal: AbortSignal.timeout(5000), ...(ttl ? { cf: { cacheTtl: ttl, cacheEverything: true } } : { cache: 'no-store' }) });
   } catch { throw new ApiError(503, 'upstream_unavailable', 'The profile service could not be reached. Try again shortly.'); }
   if (response.status === 429) throw new ApiError(429, 'rate_limited', 'The lookup service is rate limiting requests. Wait a minute and try again.');
   if (response.status === 404 || response.status === 204) return null;
-  if (!response.ok) throw new ApiError(502, 'upstream_error', 'The profile service could not complete this lookup. Try again shortly.', { upstreamStatus: response.status, upstreamHost: new URL(url).hostname });
+  if (!response.ok && !options.allowStatuses?.includes(response.status)) throw new ApiError(502, 'upstream_error', 'The profile service could not complete this lookup. Try again shortly.', { upstreamStatus: response.status, upstreamHost: new URL(url).hostname });
   return response;
 }
 
@@ -34,10 +34,11 @@ function profileIdentity(data, expectedId) {
   return { id, name: data.name };
 }
 
-async function playerDbLookup(value, fetcher, expectedId) {
-  const response = await upstream(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(value)}`, fetcher);
+async function playerDbLookup(value, fetcher, expectedId, allowMissing = false) {
+  const response = await upstream(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(value)}`, fetcher, 0, { allowStatuses: allowMissing ? [400] : [] });
   if (!response) throw new ApiError(503, 'profile_unavailable', 'The official profile service is unavailable and no cached profile was found.');
   const body = await readJson(response);
+  if (allowMissing && response.status === 400 && body.code === 'minecraft.invalid_username' && body.success === false && body.error === false) return null;
   const data = body?.data?.player;
   if (body.code !== 'player.found' || !data) throw new ApiError(502, 'invalid_response', 'The backup profile service returned an invalid profile.');
   const identity = profileIdentity({ id: data.id, name: data.username }, expectedId);
@@ -62,6 +63,21 @@ async function nameLookup(name, fetcher, allowCached = false) {
   if (allowCached) {
     const data = await playerDbLookup(name, fetcher);
     return { id: data.id, name: data.name, source: data.source, cachedAt: data.cachedAt };
+  }
+  for (const url of ['https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname', 'https://api.mojang.com/profiles/minecraft']) {
+    try {
+      const response = await upstream(url, fetcher, 0, { method: 'POST', body: JSON.stringify([name]), headers: { 'Content-Type': 'application/json' } });
+      if (!response) throw new ApiError(502, 'invalid_response', 'The official profile lookup is unavailable.');
+      const entries = await readJson(response);
+      if (!Array.isArray(entries) || entries.length > 1) throw new ApiError(502, 'invalid_response', 'The official profile lookup returned an invalid result.');
+      if (!entries.length) return null;
+      const identity = profileIdentity(entries[0]);
+      if (identity.name.toLowerCase() !== name.toLowerCase()) throw new ApiError(502, 'invalid_response', 'The official profile lookup returned a different username.');
+      return identity;
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status === 429) throw error;
+      failure = error;
+    }
   }
   throw failure;
 }
@@ -105,8 +121,14 @@ export async function handleApi(request, fetcher = fetch) {
       response = json(profile);
     } else if (kind === 'ign') {
       if (!validUsername(value, 3)) throw new ApiError(400, 'invalid_name', 'Use 3–16 letters, numbers or underscores.');
-      const profile = await nameLookup(value, fetcher);
-      response = json({ name: value, registered: Boolean(profile), profile, checkedAt: new Date().toISOString() });
+      try {
+        const profile = await nameLookup(value, fetcher);
+        response = json({ name: value, registered: Boolean(profile), profile, source: 'Mojang', verification: 'official', checkedAt: new Date().toISOString() });
+      } catch (error) {
+        if (!(error instanceof ApiError) || error.status === 429) throw error;
+        const cached = await playerDbLookup(value, fetcher, null, true);
+        response = json({ name: value, registered: cached ? true : null, profile: cached ? { id: cached.id, name: cached.name } : null, source: 'PlayerDB', verification: cached ? 'cached' : 'unconfirmed', cachedAt: cached?.cachedAt || null, checkedAt: new Date().toISOString() });
+      }
     } else {
       let id = normalizeUuid(value);
       if (!id) {

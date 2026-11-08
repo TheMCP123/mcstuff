@@ -149,14 +149,14 @@ test('a 403 then authoritative 404 is unregistered; a 429 stops retries', async 
   assert.equal(calls, 1);
 });
 
-test('IGN never converts a failed official lookup into a cached availability result', async () => {
+test('failure of all providers never produces an unregistered status', async () => {
   const calls = [];
   const result = await handleApi(request('/api/ign/Notch'), async url => { calls.push(url); return new Response(null, { status: 403 }); });
   assert.equal(result.status, 502);
   const body = await result.json();
   assert.equal(body.registered, undefined);
   assert.equal(body.upstreamStatus, 403);
-  assert.ok(calls.every(url => !url.includes('playerdb.co')));
+  assert.ok(calls.at(-1).includes('playerdb.co'));
 });
 
 const cachedPlayer = (overrides = {}) => ({ code: 'player.found', data: { player: { id, username: 'Notch', properties: textures({ url: `https://textures.minecraft.net/texture/${hash}` }).properties, meta: { cached_at: 1700000000 }, ...overrides } } });
@@ -194,4 +194,39 @@ test('backup data must match the requested player and must actually contain skin
   }
   const wrongName = await handleApi(request('/api/uuid/Notch'), async url => url.includes('playerdb.co') ? reply(cachedPlayer({ username: 'OtherPlayer' })) : new Response(null, { status: 403 }));
   assert.equal(wrongName.status, 502);
+});
+
+test('IGN can use official POST lookup when the GET routes are denied', async () => {
+  for (const present of [true, false]) {
+    const result = await handleApi(request('/api/ign/Notch'), async (url, options) => {
+      if (options.method !== 'POST') return new Response(null, { status: 403 });
+      assert.equal(options.headers['Content-Type'], 'application/json');
+      assert.deepEqual(JSON.parse(options.body), ['Notch']);
+      return reply(present ? [identity] : []);
+    });
+    const body = await result.json();
+    assert.equal(body.registered, present);
+    assert.equal(body.verification, 'official');
+  }
+});
+
+test('cached IGN registration is explicitly identified as historical, not official', async () => {
+  const result = await handleApi(request('/api/ign/Notch'), async url => url.includes('playerdb.co') ? reply(cachedPlayer()) : new Response(null, { status: 403 }));
+  const body = await result.json();
+  assert.equal(result.status, 200);
+  assert.equal(body.registered, true);
+  assert.equal(body.verification, 'cached');
+  assert.equal(body.source, 'PlayerDB');
+  assert.equal(body.profile.id, id);
+});
+
+test('backup absence never becomes an authoritative free-name claim', async () => {
+  const result = await handleApi(request('/api/ign/UnusedName123'), async url => url.includes('playerdb.co') ? reply({ code: 'minecraft.invalid_username', success: false, error: false }, 400) : new Response(null, { status: 403 }));
+  const body = await result.json();
+  assert.equal(result.status, 200);
+  assert.equal(body.registered, null);
+  assert.equal(body.verification, 'unconfirmed');
+  assert.equal(body.profile, null);
+  const broken = await handleApi(request('/api/ign/UnusedName123'), async url => url.includes('playerdb.co') ? reply({ code: 'minecraft.api_failure' }, 400) : new Response(null, { status: 403 }));
+  assert.equal(broken.status, 502);
 });
