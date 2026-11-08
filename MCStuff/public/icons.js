@@ -2,6 +2,7 @@
 const names = {
   package: 'package-plus', palette: 'palette', skin: 'scan-face', waypoint: 'map-pin',
   namecheck: 'user-round-check', menu: 'menu', search: 'search', close: 'x', reset: 'rotate-ccw',
+  chevron: 'chevron-down', check: 'check', add: 'plus', download: 'download',
 };
 
 export function iconMarkup(name) {

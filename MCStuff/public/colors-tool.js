@@ -1,4 +1,5 @@
 import { MINECRAFT_COLORS, DECORATIONS, OUTPUT_FORMATS, MINIMESSAGE_SNIPPETS, normalizeHex, messageRuns, serializeMessage } from './formatting.js';
+import { refreshFormControls } from './form-controls.js';
 
 const state = { text: 'Hello, Minecraft!', start: '#55FF55', end: '#55FFFF', mode: 'solid', format: 'minimessage', decorations: [] };
 
@@ -202,6 +203,7 @@ export function mountColorsTool(host) {
     if (end) state.end = end;
     startPicker.value = start.toLowerCase();
     if (end) endPicker.value = end.toLowerCase();
+    refreshFormControls(host);
     output.value = serializeMessage(state);
     preview.replaceChildren();
     preview.removeAttribute('aria-label');

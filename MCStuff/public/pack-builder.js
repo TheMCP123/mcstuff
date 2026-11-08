@@ -1,6 +1,7 @@
 import { iconMarkup } from './icons.js';
 import { PACK_TYPES, LOADERS, SOURCES, MAX_PACK_ITEMS, packContext, projectKey, safeFilename, safePageUrl, mergePackItems, removePackItem, formatBytes, packManifest, restorePackDraft } from './pack-data.js';
 import { exportPackZip, fetchPackFile } from './pack-export.js';
+import { refreshFormControls } from './form-controls.js';
 
 const STORAGE = 'mcstuff-pack-v1';
 const state = { type:'plugins', mc:'', loader:'paper', prerelease:false, source:'all', query:'', sort:'relevance', name:'My Pack', items:[], results:[], page:0, hasMore:false, warnings:[], meta:null };
@@ -32,19 +33,19 @@ export function mountPackBuilder(host) {
     <label class="field" id="pack-platform-field">Platform<select id="pack-platform"></select></label>
     <label class="field">Catalog<select id="pack-source"><option value="all">All catalogs</option><option value="modrinth">Modrinth</option><option value="spigot">SpigotMC · Spiget</option><option value="curseforge" disabled>CurseForge · API key required</option></select></label>
   </div>
-  <p id="pack-status" class="checker-status" role="status" hidden></p>
   <div class="pack-layout">
     <div class="pack-catalog">
-      <form class="pack-search" role="search"><div class="pack-search-input">${iconMarkup('search')}<input id="pack-query" type="search" maxlength="100" autocomplete="off" spellcheck="false" aria-label="Search projects" placeholder="Search plugins"><button class="action-button" type="submit">Search</button></div>
+      <form class="pack-search" role="search"><div class="pack-search-input">${iconMarkup('search')}<input id="pack-query" type="search" maxlength="100" autocomplete="off" spellcheck="false" aria-label="Search projects" placeholder="Search plugins"><button id="pack-query-clear" type="button" class="control-close" aria-label="Clear project search" hidden>${iconMarkup('close')}</button><button class="action-button" type="submit">Search</button></div>
       <div class="pack-search-options"><label class="pack-prerelease"><input id="pack-prerelease" type="checkbox">Pre-release files</label><label class="pack-sort-label">Sort<select id="pack-sort"><option value="relevance">Relevance</option><option value="downloads">Downloads</option><option value="updated">Recently updated</option></select></label></div></form>
       <div class="pack-catalog-notices" role="status" hidden></div><div id="pack-results" class="pack-results" aria-label="Project results"></div><button id="pack-more" type="button" class="pack-secondary" hidden>Load more</button>
     </div>
-    <details id="pack-selection" class="pack-selection" open><summary><span>Your pack <span id="pack-count">0</span></span><span id="pack-total"></span></summary><div class="pack-selection-body">
-      <label class="field-label" for="pack-name">Pack name</label><input id="pack-name" type="text" maxlength="100" placeholder="My Pack">
+    <aside id="pack-selection" class="pack-selection"><button type="button" class="pack-selection-toggle" aria-expanded="true" aria-controls="pack-selection-body"><span>Your pack <span id="pack-count">0</span></span><span id="pack-total"></span>${iconMarkup('chevron')}</button><div id="pack-selection-body" class="pack-selection-body">
+      <div class="pack-name-field"><label class="field-label" for="pack-name">Pack name</label><input id="pack-name" type="text" maxlength="100" placeholder="My Pack"></div>
       <p id="pack-empty" class="field-help">Add projects from the catalog.</p><ul id="pack-items"></ul><p id="pack-notes" class="field-help" hidden></p>
-      <div class="pack-actions"><button id="pack-download" type="button" class="action-button" disabled>Download ZIP</button><button id="pack-export-list" type="button" class="pack-secondary" disabled>Export list</button></div><button id="pack-clear" class="text-button" type="button" hidden>Clear pack</button>
+      <div class="pack-selection-footer"><div class="pack-actions"><button id="pack-download" type="button" class="action-button" disabled>${iconMarkup('download')}<span>Download ZIP</span></button><div class="pack-export-actions"><button id="pack-export-list" type="button" class="pack-secondary" disabled>Export list</button><button id="pack-clear" class="text-button" type="button" hidden>Clear pack</button></div></div>
       <div id="pack-progress" hidden><progress value="0" max="1" aria-label="Pack download progress"></progress><span class="field-help" role="status"></span><button id="pack-cancel" type="button" class="text-button">Cancel download</button></div><div id="pack-download-result" role="status" hidden></div>
-    </div></details>
+      <p id="pack-status" class="checker-status" role="status" hidden></p></div>
+    </div></aside>
   </div>`;
   host.append(root);
   const find=selector=>root.querySelector(selector);
@@ -56,11 +57,14 @@ export function mountPackBuilder(host) {
   let searchController, addController, downloadController;
   let searchId=0, debounce;
   const urls=new Map();
-  selection.open=!window.matchMedia('(max-width: 1050px)').matches;
+  const selectionToggle=find('.pack-selection-toggle'), selectionBody=find('#pack-selection-body');
+  function expandSelection(expanded){selectionToggle.setAttribute('aria-expanded',String(expanded));selectionBody.hidden=!expanded;selection.classList.toggle('is-collapsed',!expanded);}
+  expandSelection(!window.matchMedia('(max-width: 1050px)').matches);
+  selectionToggle.addEventListener('click',()=>expandSelection(selectionToggle.getAttribute('aria-expanded')!=='true'));
   for (const [value,config] of Object.entries(PACK_TYPES)) type.append(new Option(config.label,value));
   type.value=state.type; source.value=state.source; query.value=state.query; sort.value=state.sort; prerelease.checked=state.prerelease; name.value=state.name;
 
-  function report(message,error=false) { status.textContent=message; status.hidden=!message; status.classList.toggle('is-error',error); }
+  function report(message,error=false) { status.textContent=message; status.hidden=!message; status.classList.toggle('is-error',error);if(message&&error)expandSelection(true); }
   function context() { return packContext(state); }
   function save() {
     if (!state.mc) return;
@@ -74,13 +78,14 @@ export function mountPackBuilder(host) {
     for (const control of [type,minecraft,platform,prerelease]) control.disabled=!ready || adding || exporting;
     name.disabled=exporting;
     source.disabled=!ready;
-    root.querySelector('.pack-search button').disabled=!ready || searching;
+    root.querySelector('.pack-search button[type="submit"]').disabled=!ready || searching;
     more.disabled=searching || !ready;
     download.disabled=!state.items.length || !ready || adding || exporting;
     exportList.disabled=!state.items.length || !ready || adding || exporting;
     clear.disabled=adding || exporting;
     for (const button of root.querySelectorAll('.pack-add,.pack-remove,.pack-file-download')) button.disabled=adding || exporting || (button.classList.contains('pack-add') && button.dataset.added==='true');
     for (const select of root.querySelectorAll('.pack-version')) select.disabled=adding || exporting;
+    refreshFormControls(host);
   }
   function updateSources() {
     source.querySelector('[value="spigot"]').hidden=state.type!=='plugins';
@@ -129,7 +134,7 @@ export function mountPackBuilder(host) {
       info.append(element('span','pack-source-name',project.source==='spigot'?'SpigotMC · Spiget':SOURCES[project.source]));
       article.append(info);
       const added=state.items.some(item=>projectKey(item.project)===projectKey(project));
-      const button=element('button','pack-add pack-secondary',added?'Added':'Add'); button.type='button'; button.dataset.added=String(added); button.setAttribute('aria-label',`${added?'Added':'Add'} ${project.title}`);
+      const button=element('button','pack-add pack-secondary');button.innerHTML=iconMarkup(added?'check':'add');button.append(element('span','',added?'Added':'Add')); button.type='button'; button.dataset.added=String(added); button.setAttribute('aria-label',`${added?'Added':'Add'} ${project.title}`);
       button.addEventListener('click',()=>addProject(project)); article.append(button); results.append(article);
     }
     more.hidden=!state.hasMore;
@@ -257,6 +262,9 @@ export function mountPackBuilder(host) {
   sort.addEventListener('change',()=>{state.sort=sort.value;search();});
   root.querySelector('.pack-search').addEventListener('submit',event=>{event.preventDefault();state.query=query.value.trim();search();});
   query.addEventListener('input',event=>{state.query=query.value.trim();clearTimeout(debounce);if(!event.isComposing)debounce=setTimeout(()=>search(),350);});
+  const clearQuery=find('#pack-query-clear');clearQuery.hidden=!query.value;
+  query.addEventListener('input',()=>{clearQuery.hidden=!query.value;});
+  clearQuery.addEventListener('click',()=>{query.value='';state.query='';clearQuery.hidden=true;query.focus();search();});
   query.addEventListener('compositionend',()=>{clearTimeout(debounce);debounce=setTimeout(()=>search(),350);});
   more.addEventListener('click',()=>{state.page++;search(true);});
   updatePlatforms();renderPack();renderResults();

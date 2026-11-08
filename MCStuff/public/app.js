@@ -3,6 +3,9 @@ import { mountColorsTool } from './colors-tool.js';
 import { setupToolSearch } from './tool-search.js';
 import { mountChecker } from './checkers.js';
 import { mountPackBuilder } from './pack-builder.js';
+import { enhanceFormControls, installControlTooltips, hideControlTooltip } from './form-controls.js';
+
+installControlTooltips();
 
 for (const element of document.querySelectorAll('[data-icon]')) {
   element.innerHTML = iconMarkup(element.dataset.icon);
@@ -67,6 +70,7 @@ function setMenu(open, restoreFocus = false) {
 }
 
 function showPage(page) {
+  hideControlTooltip();
   disposePage();
   disposePage = () => {};
   const view = document.createElement('div');
@@ -93,6 +97,10 @@ function showPage(page) {
   if (page === 'colors') disposePage = mountColorsTool(view);
   if (page === 'builder') disposePage = mountPackBuilder(view);
   if (['skin', 'waypoint', 'ign'].includes(page)) disposePage = mountChecker(view, page);
+  const disposeTool = disposePage;
+  const disposeControls = enhanceFormControls(view);
+  disposePage = () => { disposeControls(); disposeTool(); };
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function render(moveFocus = false) {
