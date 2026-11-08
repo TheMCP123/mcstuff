@@ -109,7 +109,7 @@ export function mountIgnTool(host, openSkin) {
       if (state.note) info.append(element('p', 'field-help', state.note));
       if (row.data) {
         const metadata = element('div', 'ign-result-meta');
-        metadata.append(element('span', '', row.data.source === 'Mojang' ? 'Mojang · Live lookup' : 'PlayerDB · Cached lookup'));
+        metadata.append(element('span', '', row.data.source));
         if (row.data.cachedAt) {
           const cached = element('time', '', `Cached ${new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(row.data.cachedAt))}`);
           cached.dateTime = row.data.cachedAt;

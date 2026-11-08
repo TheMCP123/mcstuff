@@ -28,7 +28,7 @@ export function validateIgnResult(data, name) {
 }
 
 export function ignStatus(data) {
-  if (data.verification === 'cached') return { label: 'Registered (cached)', tone: 'cached', note: 'Cached registration. Live status could not be confirmed.' };
+  if (data.verification === 'cached') return { label: 'Registered (cached)', tone: 'cached', note: 'Live registration could not be confirmed.' };
   if (data.registered === null) return { label: 'Unconfirmed', tone: 'unknown', note: 'No cached profile. Mojang could not confirm availability.' };
   if (data.registered) return { label: 'Taken', tone: 'taken', note: '' };
   return { label: 'Not registered', tone: 'unregistered', note: 'Mojang may still reserve this name or hold it in a cooldown.' };
