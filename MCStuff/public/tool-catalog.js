@@ -3,7 +3,7 @@ export const TOOL_CATALOG = [
   { id: 'builder', title: 'Pack Builder', category: 'general', detail: '', keywords: 'pack packs builder packbuilder modrinth mod mods plugin plugins modpack modpacks minecraft сборка сборки сборок билдер мод моды модпак модпаки плагин плагины' },
   { id: 'skin', title: 'Skin Stealer', category: 'checkers', detail: 'Public Java skins · PNG download', keywords: 'skin skins stealer texture png download player username uuid скин скины скачать игрок' },
   { id: 'waypoint', title: 'Waypoint Color', category: 'checkers', detail: 'Java Locator Bar marker color', keywords: 'waypoint locator marker color colour uuid player цвет метка локатор' },
-  { id: 'ign', title: 'IGN Availability', category: 'checkers', detail: 'Java username registration check', keywords: 'ign availability available name username nickname registration taken registered check ник имя занят свободен' },
+  { id: 'ign', title: 'IGN Availability', category: 'checkers', detail: 'Java username registration check', keywords: 'ign availability available name names username usernames nickname registration taken registered check bulk batch multiple ник ники имя занят свободен массовая пакетная' },
 ];
 
 const ignoredWords = new Set('a an the and for to of with in on find search tool tools how и для по на с из как найти инструмент инструменты'.split(' '));

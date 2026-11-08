@@ -8,7 +8,7 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "check": "node --check public/app.js && node --check public/formatting.js && node --check public/colors-tool.js && node --check public/tool-catalog.js && node --check public/tool-search.js && node --check public/checker-data.js && node --check public/checkers.js && node --check public/icons.js && node --check public/skin-preview.js && node --check worker/index.js && node --check scripts/dev.mjs",
+    "check": "node --check public/app.js && node --check public/formatting.js && node --check public/colors-tool.js && node --check public/tool-catalog.js && node --check public/tool-search.js && node --check public/checker-data.js && node --check public/checkers.js && node --check public/ign-data.js && node --check public/ign-tool.js && node --check public/icons.js && node --check public/skin-preview.js && node --check worker/index.js && node --check scripts/dev.mjs",
     "test": "node --test",
     "deploy": "npx wrangler@4.156.1 deploy --config ../wrangler.jsonc"
   }

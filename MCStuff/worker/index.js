@@ -54,7 +54,10 @@ async function nameLookup(name, fetcher, allowCached = false) {
   for (const host of ['api.minecraftservices.com', 'api.mojang.com']) {
     try {
       const response = await upstream(`https://${host}${path}`, fetcher);
-      return response ? profileIdentity(await readJson(response)) : null;
+      if (!response) return null;
+      const identity = profileIdentity(await readJson(response));
+      if (identity.name.toLowerCase() !== name.toLowerCase()) throw new ApiError(502, 'invalid_response', 'The profile lookup returned a different username.');
+      return identity;
     } catch (error) {
       if (!(error instanceof ApiError) || error.status === 429) throw error;
       failure = error;

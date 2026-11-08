@@ -1,0 +1,18 @@
+Minecraft Locator Bar textures
+Copyright Mojang AB / Microsoft. These game assets are not covered by MCStuff's MIT license.
+
+Unmodified PNG files extracted from the official Minecraft Java Edition 26.1.1 client.
+Source: https://piston-data.mojang.com/v1/objects/377031a9e733ba8ab4d355959a8f6fb8eb707556/client.jar
+Verified client SHA-1: 377031a9e733ba8ab4d355959a8f6fb8eb707556
+Original directory: assets/minecraft/textures/gui/sprites/hud/
+
+SHA-256:
+b4754dd4f781468409d9a4f8b817439a802d81ddcf34df34f317899a7211d885  locator_bar_background.png
+ab0e90c3742ccfd63705536c24d4fb7c4608f5473e8cb351b0d13e24eef9438e  locator_bar_dot/default_0.png
+38bfb8d44f9532d3004d397d3b141aeaa24cb0291181c08c63c1d66d4932d9db  locator_bar_dot/default_1.png
+3b2ed25621261052dfafef778e108e8ec056dc9fde702af03555a49b295e3a6d  locator_bar_dot/default_2.png
+4fe7975fc5d2ffc612afa4fe3f35a42ccf269f6b77c8ea093ae38f859b2f4f3b  locator_bar_dot/default_3.png
+
+The background is rendered with its original nine-slice geometry: 12x5, borders 5/5/1/1.
+Marker PNGs remain 9x9. RGB tint is applied at render time, retaining the texture shading and alpha.
+Minecraft: https://www.minecraft.net/

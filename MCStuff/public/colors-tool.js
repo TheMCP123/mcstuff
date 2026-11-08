@@ -22,10 +22,9 @@ function copyButton(code) {
 export function mountColorsTool(host) {
   const content = element('div', 'colors-tool');
   content.innerHTML = `
-    <section class="message-builder" aria-labelledby="builder-heading">
+    <section class="message-builder" aria-label="Message builder">
       <div class="composer-controls">
-        <h2 id="builder-heading">Message builder</h2>
-        <label class="field-label" for="message-text">Plain text</label>
+        <label class="field-label" for="message-text">Text</label>
         <textarea id="message-text" rows="3" maxlength="2000" spellcheck="false" placeholder="Enter your message"></textarea>
         <div class="control-row">
           <label class="field">Color mode<select id="color-mode"><option value="solid">Single color</option><option value="gradient">Gradient</option></select></label>
@@ -41,14 +40,14 @@ export function mountColorsTool(host) {
         <p class="field-help" id="format-help"></p>
       </div>
       <div class="composer-result">
-        <span class="field-label" id="preview-label">Browser preview</span>
+        <span class="field-label" id="preview-label">Preview</span>
         <div class="message-preview" aria-labelledby="preview-label"><span id="preview-text"></span></div>
         <div class="output-heading"><label class="field-label" for="message-output">Result</label><button class="action-button" type="button" id="copy-result">Copy result</button></div>
         <textarea id="message-output" class="code-output" rows="5" readonly spellcheck="false" aria-describedby="format-help"></textarea>
       </div>
     </section>
     <section class="reference-section" aria-labelledby="colors-heading">
-      <div class="section-heading"><h2 id="colors-heading">Minecraft colors</h2><span class="field-help">Click a code to copy</span></div>
+      <div class="section-heading"><h2 id="colors-heading">Minecraft colors</h2></div>
       <div class="reference-scroll" tabindex="0" role="region" aria-label="Minecraft color codes">
         <table class="reference-table"><thead><tr><th scope="col">Color</th><th scope="col">HEX</th><th scope="col">Legacy</th><th scope="col">MiniMessage</th></tr></thead><tbody id="color-rows"></tbody></table>
       </div>
@@ -58,7 +57,7 @@ export function mountColorsTool(host) {
       <div class="reference-scroll" tabindex="0" role="region" aria-label="Text formatting codes">
         <table class="reference-table"><thead><tr><th scope="col">Style</th><th scope="col">Legacy</th><th scope="col">MiniMessage</th></tr></thead><tbody id="style-rows"></tbody></table>
       </div>
-      <p class="field-help">Legacy color codes reset styles. The builder reapplies them after each color change. MiniMessage strict mode does not allow &lt;reset&gt;.</p>
+      <p class="field-help">Legacy colors reset styles. &lt;reset&gt; is not valid in strict MiniMessage.</p>
     </section>
     <details class="snippet-section"><summary>MiniMessage snippets</summary><div class="snippet-list"></div></details>
     <div class="reference-sources"><a href="https://docs.papermc.io/adventure/minimessage/format/" target="_blank" rel="noopener noreferrer">MiniMessage documentation ↗</a><a href="https://docs.papermc.io/adventure/serializer/legacy/" target="_blank" rel="noopener noreferrer">Legacy documentation ↗</a></div>

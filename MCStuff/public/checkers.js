@@ -1,10 +1,10 @@
 import { normalizeUuid, validUsername, waypointColor } from './checker-data.js';
 import { createSkinPreview } from './skin-preview.js';
+import { mountIgnTool } from './ign-tool.js';
 
 const tools = {
-  skin: { label: 'Java username or UUID', placeholder: 'e.g. Notch', button: 'Find skin', help: 'Look up a player’s public Java Edition skin.' },
-  waypoint: { label: 'Java username or UUID', placeholder: 'Username or UUID', button: 'Find color', help: 'Default Locator Bar marker color. A UUID can be checked without a network request.' },
-  ign: { label: 'Java username', placeholder: '3–16 letters, numbers or underscores', button: 'Check name', help: 'Check whether a public Java Edition profile uses this name.' },
+  skin: { label: 'Java username or UUID', placeholder: 'Username or UUID', button: 'Find skin', help: '' },
+  waypoint: { label: 'Java username or UUID', placeholder: 'Username or UUID', button: 'Find color', help: 'Java Edition Locator Bar · UUID works offline' },
 };
 const memory = Object.fromEntries(Object.keys(tools).map(key => [key, { input: '', result: null }]));
 
@@ -16,6 +16,11 @@ function element(tag, className, text) {
 }
 
 export function mountChecker(host, kind) {
+  if (kind === 'ign') return mountIgnTool(host, id => {
+    memory.skin.input = id;
+    memory.skin.result = null;
+    window.location.hash = 'skin';
+  });
   const config = tools[kind];
   const state = memory[kind];
   const content = element('section', 'checker-tool');
@@ -29,8 +34,9 @@ export function mountChecker(host, kind) {
   const feedback = content.querySelector('.copy-feedback');
   content.querySelector('label').textContent = config.label;
   content.querySelector('#checker-help').textContent = config.help;
+  content.querySelector('#checker-help').hidden = !config.help;
   input.placeholder = config.placeholder;
-  input.maxLength = kind === 'ign' ? 16 : 36;
+  input.maxLength = 36;
   input.value = state.input;
   submit.textContent = config.button;
   let controller;
@@ -107,7 +113,7 @@ export function mountChecker(host, kind) {
       download.setAttribute('aria-disabled', 'true');
       report('The skin texture could not be loaded. Run the lookup again to retry.', true);
     });
-    info.append(element('p', 'field-help', `${data.skin.model} model · Original PNG from Mojang`), download);
+    info.append(element('p', 'field-help', `${data.skin.model} model`), download);
     layout.append(preview.element, info);
     result.append(layout);
   }
@@ -123,53 +129,43 @@ export function mountChecker(host, kind) {
     layout.append(swatch, info);
     const preview = element('div', 'locator-preview');
     preview.setAttribute('role', 'img');
-    preview.setAttribute('aria-label', `Locator Bar marker sizes in ${color.hex}`);
-    preview.append(element('div', 'locator-track'));
-    for (const [distance, size] of [['Near', 14], ['Mid', 10], ['Far', 6]]) {
+    preview.setAttribute('aria-label', `Minecraft Locator Bar with four marker sizes in ${color.hex}`);
+    const bar = element('div', 'locator-bar');
+    bar.append(element('div', 'locator-track'));
+    const labels = element('div', 'locator-labels');
+    for (const [index, distance] of ['Near', '', '', 'Far'].entries()) {
       const sample = element('span', 'locator-sample');
-      const marker = element('i', 'locator-marker');
-      marker.style.backgroundColor = color.hex;
-      marker.style.width = marker.style.height = `${size}px`;
-      sample.append(marker, element('span', '', distance));
-      preview.append(sample);
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 9 9');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.classList.add('locator-marker');
+      const filterId = `waypoint-tint-${index}`;
+      const factors = color.rgb.map(channel => channel / 255);
+      svg.innerHTML = `<defs><filter id="${filterId}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${factors[0]} 0 0 0 0 0 ${factors[1]} 0 0 0 0 0 ${factors[2]} 0 0 0 0 0 1 0"/></filter></defs><image href="/textures/minecraft/default_${index}.png" width="9" height="9" filter="url(#${filterId})"/>`;
+      sample.append(svg);
+      bar.append(sample);
+      labels.append(element('span', '', distance));
     }
-    result.append(layout, preview, element('p', 'field-help', 'Default Java Edition color. Teams, /waypoint commands and server plugins can override it.'));
-  }
-
-  function renderIgn(data) {
-    const label = data.verification === 'cached' ? 'Registered (cached)' : data.registered === null ? 'No public profile found' : data.registered ? 'Taken' : 'Not registered';
-    result.append(element('h2', '', data.name), element('p', `ign-status ${data.registered ? 'is-taken' : 'is-unregistered'}`, label));
-    if (data.registered) {
-      result.append(element('p', 'field-help', data.verification === 'cached' ? `PlayerDB last recorded this name as registered to ${data.profile.name}. Live registration could not be confirmed.` : `This name is registered to ${data.profile.name}.`), copyValue('UUID', data.profile.id));
-    } else result.append(element('p', 'field-help', data.registered === null ? 'The backup service found no profile. Live Mojang registration could not be confirmed; this is not a guarantee the name can be claimed.' : 'No public Java profile found. This does not guarantee the name can be claimed: Mojang may reserve it or hold it in a cooldown.'));
-    if (data.source === 'PlayerDB') {
-      const date = data.cachedAt ? ` · ${new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(data.cachedAt))}` : '';
-      result.append(element('p', 'field-help', `Source: PlayerDB${date}`));
-    }
-    const time = element('time', 'checker-checked', `Checked ${new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(data.checkedAt))}`);
-    time.dateTime = data.checkedAt;
-    result.append(time);
+    preview.append(bar, labels);
+    result.append(layout, preview, element('p', 'field-help', 'Servers can override the default color.'));
   }
 
   function render(data) {
     clearResult();
-    ({ skin: renderSkin, waypoint: renderWaypoint, ign: renderIgn })[kind](data);
+    ({ skin: renderSkin, waypoint: renderWaypoint })[kind](data);
   }
 
   async function lookup(value, signal) {
     const uuid = normalizeUuid(value);
     if (kind === 'waypoint' && uuid) return { id: uuid, name: null };
-    const route = kind === 'skin' ? 'player' : kind === 'waypoint' ? 'uuid' : 'ign';
+    const route = kind === 'skin' ? 'player' : 'uuid';
     let response;
     try { response = await fetch(`/api/${route}/${encodeURIComponent(value)}`, { signal, credentials: 'omit', cache: 'no-store', headers: { Accept: 'application/json' } }); }
     catch (error) { if (error.name === 'AbortError') throw error; throw new Error('The lookup service could not be reached. Try again shortly.'); }
     let data;
     try { data = await response.json(); } catch { throw new Error('The lookup service returned an invalid response. Try again shortly.'); }
     if (!response.ok) throw new Error(data.message || 'This lookup could not be completed.');
-    if (kind === 'ign') {
-      const unconfirmed = data.registered === null && data.verification === 'unconfirmed' && data.source === 'PlayerDB';
-      if ((!unconfirmed && typeof data.registered !== 'boolean') || !validUsername(data.name, 3) || !Number.isFinite(Date.parse(data.checkedAt)) || (data.registered && !normalizeUuid(data.profile?.id))) throw new Error('The lookup returned an invalid response.');
-    } else if (!normalizeUuid(data.id) || (data.skin && !/^\/api\/skin\/[a-f\d]{64}$/.test(data.skin.url))) throw new Error('The lookup returned an invalid response.');
+    if (!normalizeUuid(data.id) || (data.skin && !/^\/api\/skin\/[a-f\d]{64}$/.test(data.skin.url))) throw new Error('The lookup returned an invalid response.');
     return data;
   }
 
@@ -193,10 +189,10 @@ export function mountChecker(host, kind) {
     event.preventDefault();
     cancel();
     const value = input.value.trim();
-    const valid = kind === 'ign' ? validUsername(value, 3) : Boolean(normalizeUuid(value) || validUsername(value));
+    const valid = Boolean(normalizeUuid(value) || validUsername(value));
     if (!valid) {
       input.setAttribute('aria-invalid', 'true');
-      report(kind === 'ign' ? 'Use 3–16 letters, numbers or underscores.' : 'Enter a Java username or a valid UUID.', true);
+      report('Enter a Java username or a valid UUID.', true);
       input.focus();
       return;
     }

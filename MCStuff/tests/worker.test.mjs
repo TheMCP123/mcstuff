@@ -230,3 +230,10 @@ test('backup absence never becomes an authoritative free-name claim', async () =
   const broken = await handleApi(request('/api/ign/UnusedName123'), async url => url.includes('playerdb.co') ? reply({ code: 'minecraft.api_failure' }, 400) : new Response(null, { status: 403 }));
   assert.equal(broken.status, 502);
 });
+
+test('an unrelated username from an official GET is rejected instead of reporting it taken', async () => {
+  const result = await handleApi(request('/api/ign/OtherName'), async url => url.includes('playerdb.co') ? reply({ code: 'minecraft.invalid_username', success: false, error: false }, 400) : reply(identity));
+  const body = await result.json();
+  assert.equal(body.registered, null);
+  assert.equal(body.profile, null);
+});
