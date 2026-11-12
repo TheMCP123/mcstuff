@@ -132,11 +132,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-link.active .icon { color: var(--accent-text); }
 .nav-content { display: flex; align-items: center; gap: 12px; pointer-events: none; }
 
-.sidebar-footer { display: flex; flex-shrink: 0; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 28px; }
+.sidebar-footer { display: flex; flex-shrink: 0; flex-direction: column; gap: 4px; margin-top: auto; padding-top: 28px; }
 .sidebar-footer-row { display: flex; align-items: center; gap: 8px; width: 100%; }
 .appearance-picker { display: flex; align-self: flex-start; flex-shrink: 0; align-items: center; justify-content: flex-start; gap: 2px; }
 .appearance-button { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 28px; padding: 0; border-radius: 4px; background: transparent; color: var(--muted); }
-.appearance-button .icon { width: 16px; height: 16px; stroke-width: 1.75; }
+.appearance-button .icon { width: 14px; height: 14px; stroke-width: 1.75; }
 .appearance-button:hover, .appearance-button[aria-pressed='true'] { color: var(--text); }
 .appearance-button:focus-visible { outline: 1px solid var(--focus); outline-offset: 3px; }
 .theme-picker { display: flex; flex-shrink: 0; align-items: center; justify-content: flex-start; gap: 2px; }

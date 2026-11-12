@@ -196,23 +196,14 @@ function selectAppearance(button) {
   hideControlTooltip();
   void playSound(sounds[appearance]);
   appearanceTransition?.skipTransition();
-  const animateIcon = () => {
-    if (selectedAppearance !== appearance) return;
-    for (const control of appearanceButtons) control.querySelector('.icon')?.getAnimations().forEach(animation => animation.cancel());
-    button.querySelector('.icon')?.animate([
-      { transform: `rotate(${appearance === 'light' ? '-100deg' : '35deg'}) scale(.65)`, opacity: .45 },
-      { transform: 'rotate(0deg) scale(1)', opacity: 1 },
-    ], { duration: 440, easing: 'cubic-bezier(.2,.8,.25,1)' });
-  };
   if (typeof document.startViewTransition === 'function') {
     try {
       appearanceTransition = document.startViewTransition(() => applyAppearance(selectedAppearance));
-      appearanceTransition.ready.then(animateIcon).catch(() => {});
+      appearanceTransition.ready.catch(() => {});
       return;
     } catch {}
   }
   applyAppearance(appearance);
-  animateIcon();
 }
 
 themeButtons.forEach(button => button.addEventListener('click', () => selectTheme(button)));
