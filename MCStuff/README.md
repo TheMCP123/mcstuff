@@ -5,7 +5,7 @@
 ## Текущее состояние
 
 - Главная MCStuff со ссылкой на рабочий инструмент.
-- Colors & Formatting (`#colors`) — локальный генератор сообщений и справочник цветов / форматирования.
+- Colors & Formatting (`#colors`) — памятка по цветам / кодам / форматированию с копированием примеров.
 - Pack Builder (`#builder`) — рабочий сборщик Plugins / Mods / Resource packs / Data packs: поиск Modrinth / SpigotMC через Spiget, автоматические обязательные зависимости, выбор файлов, отдельные загрузки и ZIP. CurseForge adapter подготовлен, нужен серверный ключ.
 - В sidebar две категории: General с Pack Builder / Colors & Formatting и Checkers со Skin Stealer (`#skin`), Waypoint Color (`#waypoint`), IGN Availability (`#ign`). Категории — заголовки групп, инструменты — отдельные страницы.
 - Поиск прямо в sidebar: ввод фильтрует существующее меню, подходящие пункты плавно перемещаются / появляются. Отдельного окна и дублирующей выдачи нет; открытый инструмент не меняется до выбора.
@@ -18,45 +18,35 @@
 
 Название вкладки всегда строго `MCStuff`. Бренд в sidebar / мобильной шапке целиком Bold 700 (Golos Text). Главная открывается без hash и по клику на бренд; старые `#overview`, `#resources`, `#tools` открывают главную. Подсветка меню скользит, страницы переключаются мгновенно.
 
-Dark Modern: фон `#101113`, sidebar `#151619`, основной текст и нейтральные линии не перекрашиваются. Пять фиксированных акцентов: Green (#22c55e, по умолчанию), Blue (#4b91ff), Yellow (#facc15), Red (#ff5252), Purple (#a970ff). Кружки 22 × 28 px, gap 2px, выравнивание влево, без кольца выбранного цвета. Discord у правого края нижней строки: `https://discord.com/invite/xQqbSxAWJ9`.
+Modern: по умолчанию Dark (#101113 / #151619), дополнительно Light (#f6f7f9 / #ffffff). Над цветами две Lucide-иконки солнца / луны: короткая анимация и звук, aria-pressed / клавиатура. Режим независимо сохраняется в mcstuff-appearance, восстанавливается до CSS; системная тема не меняет default. Цвета / формы / popup / ошибки и status badges поддерживают оба режима. Акценты Green (default), Blue, Yellow, Red, Purple хранятся отдельно в mcstuff-theme. Цвета 22 × 28px / gap 2px и Discord справа сохраняют нижнее положение.
 
-По последнему требованию свой акцент сайта удалён. Ранний скрипт восстанавливает preset из `mcstuff-theme` до CSS, старые Amber / Rose отображает как Yellow / Red. Старый режим custom заменяет на Green, `mcstuff-custom-accent` удаляет. HEX-поля в инструменте меняют только текст Minecraft.
+По последнему требованию свой акцент сайта удалён. Ранний скрипт восстанавливает preset из `mcstuff-theme` до CSS, старые Amber / Rose отображает как Yellow / Red. Старый режим custom заменяет на Green, `mcstuff-custom-accent` удаляет. HEX-коды памятки относятся к цветам Minecraft.
 
-Звук акцента — sine, 760 → 580 Hz, 70 ms; навигации — triangle, 440 → 300 Hz, 50 ms. Оба используют gain 0.025 и один ленивый AudioContext. Повторный выбор, reload и Discord без звука; ошибки аудио не блокируют интерфейс. Анимации меню / поиска по требованию пользователя не отключаются автоматически при prefers-reduced-motion.
+Звук акцента — sine, 760 → 580 Hz, 70 ms; навигации — triangle, 440 → 300 Hz, 50 ms. Режим: Light sine 540 → 810 Hz, Dark 690 → 460 Hz, 80ms. Все используют gain 0.025 и один ленивый AudioContext. Повторный выбор, reload и Discord без звука; ошибки аудио не блокируют интерфейс. Анимации меню / поиска по требованию пользователя не отключаются автоматически при prefers-reduced-motion.
 
 ## Colors & Formatting
 
-Генератор принимает обычный текст (до 2000 символов), цвет или двухцветный градиент и декорации: bold, italic, underlined, strikethrough, obfuscated. Есть сброс стилей, проверка HEX (3 / 6 цифр), безопасный browser preview, кнопка копирования результата.
+По последнему требованию это памятка: 16 цветов Minecraft Java с HEX, Legacy & / § и MiniMessage; пять декораций и reset с открывающими / закрывающими тегами. Отдельно показаны примеры MiniMessage / Legacy / HEX / BungeeCord RGB / JSON (Java), а также готовые MiniMessage snippets: gradient, rainbow, transition, shadow, hover / click, font, newline, keybind, translation, insertion и выключение стиля.
 
-Форматы вывода:
+Генератор, текстовые поля, пикеры, preview / result и интерактивные стили удалены. Имена цветов статические; коды и примеры копируются кликом. Примеры выводятся через textContent. Уведомление Copied появляется после успешной записи; при отказе выделяется код для ручного копирования. Состояния сообщения и obfuscation timer больше нет; таймер уведомления освобождается при уходе.
 
-- MiniMessage — именованный / HEX-цвет или gradient, декорации, экранирование `<` и обратного слеша, закрытие тегов в обратном порядке.
-- Legacy `&` и `§` — ближайший из 16 стандартных цветов; после смены цвета стили применяются повторно, в конце добавляется reset.
-- Короткий RGB `&#RRGGBB` / `§#RRGGBB`.
-- BungeeCord RGB `&x&R&R&G&G&B&B` / `§x§R§R§G§G§B§B`.
-- JSON (Java) — текстовый компонент; при градиенте по одному компоненту на Unicode code point.
+Синтаксис выбирается по поддержке плагина / config field. Legacy ограничен своими цветами / декорациями; цвет сбрасывает стили, hover / click отсутствуют. Поддержка RGB зависит от serializer. В strict MiniMessage теги закрываются в обратном порядке, reset запрещён. Все реальные образцы HEX остаются одинаковыми при смене режима и акцента.
 
-Справочник содержит все 16 цветов Minecraft Java, HEX, Legacy `&` / `§`, MiniMessage и пять декораций + reset. Код можно скопировать, цвет — применить к сообщению. Дополнительно есть MiniMessage snippets: gradient, rainbow, transition, shadow, hover, click, font, newline, keybind, translation, insertion и выключение стиля.
-
-Это генератор из plain text, не полный парсер произвольных MiniMessage / Legacy-строк. Browser preview использует системный monospace, а не шрифт Minecraft; obfuscated имитируется сменой символов. Совместимость RGB-синтаксиса зависит от плагина и указана рядом с выбранным форматом. MiniMessage strict mode не поддерживает `<reset>`; Legacy не поддерживает hover / click. Зарезервированные Legacy-коды внутри обычного текста не имеют универсального способа экранирования.
-
-Текст обрабатывается только в браузере, не отправляется в сеть и не пишется в localStorage. При переходах между разделами состояние сохраняется в памяти; reload сбрасывает генератор. Таймеры прекращаются при уходе. Copied появляется только после успешной записи в Clipboard API; при отказе выделяется текст для ручного копирования.
-
-Основные источники: [MiniMessage format](https://docs.papermc.io/adventure/minimessage/format/) и [Legacy serializer](https://docs.papermc.io/adventure/serializer/legacy/). Значения Minecraft / Adventure не привязаны к вручную объявленной «последней версии».
+Основные источники: [MiniMessage format](https://docs.papermc.io/adventure/minimessage/format/) и [Legacy serializer](https://docs.papermc.io/adventure/serializer/legacy/).
 
 ## Технологии и файлы
 
-Выбор форматов / версий и цвета использует общие кастомные контролы вместо OS popup. Длинные списки имеют поиск; доступны клавиатура / ARIA, HSV plane / sliders / HEX, закрытие по Escape / клику снаружи и очистка при уходе. Checkbox, progress, scrollbars, раскрывающиеся блоки и подсказки оформлены в Dark Modern. В Pack Builder увеличены кнопки, выровнены фильтры / карточки, список файлов прокручивается отдельно от Download; на мобильном Your pack свёрнут, ошибки раскрывают панель. Переход между инструментами мгновенно возвращает страницу наверх.
+Выбор версий в Builder использует общие кастомные контролы вместо OS popup. Общий компонент выбора цвета сохранён, но на странице Colors не отображается. Длинные списки имеют поиск; доступны клавиатура / ARIA, HSV plane / sliders / HEX, закрытие по Escape / клику снаружи и очистка при уходе. Checkbox, progress, scrollbars, раскрывающиеся блоки и подсказки поддерживают Dark / Light. В Pack Builder увеличены кнопки, выровнены фильтры / карточки, список файлов прокручивается отдельно от Download; на мобильном Your pack свёрнут, ошибки раскрывают панель. Переход между инструментами мгновенно возвращает страницу наверх.
 
 Frontend — buildless HTML / CSS / JavaScript ES modules. Для публичных Mojang lookup / PNG добавлен Cloudflare Worker ES module; same-origin API решает CORS и не требует токенов. npm-зависимостей и фреймворка нет. Node.js 22+ для локального сервера / проверок; проверено на Node.js 24.16.0, npm 11.13.0.
 
 - `public/index.html` — каркас, меню с группами General / Checkers, 5 акцентов, inline-строка поиска, раннее восстановление preset.
-- `public/styles.css` — Dark Modern, адаптивность от 320 px, стили инструмента и анимации поиска / меню.
+- `public/styles.css` — Dark / Light Modern, адаптивность от 320 px, стили инструмента и анимации поиска / меню.
 - `public/form-controls.js`, `form-controls.css` — общие select / color picker, tooltips / disclosure и оформление полей; MutationObserver отслеживает динамические варианты, dispose освобождает popup / обработчики. `refreshFormControls(host)` синхронизирует программные value / disabled.
 - `public/control-data.js`, `tests/control-data.test.mjs` — HSV / HEX, фильтрация вариантов, клавиатурная навигация и позиционирование в viewport; пять тестов.
 - `public/app.js` — маршрутизация, title, темы, звук, мобильное меню, жизненный цикл инструмента.
 - `public/formatting.js` — палитра, декорации, RGB, градиенты, сериализаторы и snippets.
-- `public/colors-tool.js` — UI, preview, проверка ввода, справочники / копирование, очистка таймеров.
+- `public/colors-tool.js` — памятка, таблицы / примеры и копирование, без генератора; очистка таймера уведомления.
 - `public/checker-data.js` — общая валидация имени / UUID и точный Java hash / HSV цвет Waypoint.
 - `public/checkers.js` — Skin / Waypoint UI, запросы / отмена / состояние, 3D / Locator Bar preview и копирование.
 - `public/ign-tool.js`, `public/ign-data.js` — Single / Bulk IGN, валидация, очередь, отмена / 429, TSV и переход к скину.
@@ -100,7 +90,7 @@ npm test
 
 Проверка настоящего Cloudflare runtime из корня: `npx wrangler@4.156.1 dev --local --port 4174 --ip 127.0.0.1`. Node preview вызывает общий handleApi; одна его проверка не заменяет workerd. Пройдены реальные HTTP lookup в workerd: профиль / UUID, занятый и незарегистрированный ник, API 404 и static assets 200. Скачанный через браузер Notch.png (64×32, 526 байт) совпал с оригинальным Mojang texture hash SHA-256. Тесты покрывают 8 Java color vectors, validation, API / 429 / redirects / malformed responses, allowlist, PNG и маршрутизацию.
 
-Пройдены 81 тест и syntax check, Wrangler dry-run (40 assets). Покрыты форматирование / Unicode / поиск, Checkers / API, Builder / ZIP и общие HSV / варианты / позиционирование. В браузере проверены кастомные списки, поиск Minecraft / смена версии файла, disabled options / клавиатура, HSV drag / HEX / clipboard, невалидный HEX и восстановление, поиск / добавление проекта / очистка, сохранённая сборка, закрытие popup при переходе. На desktop / 320px нет переполнения; мобильный пикер с сообщением об ошибке помещается в экран, title MCStuff, консоль чистая. Предыдущие проверки inline-поиска подтвердили ранжирование / очистку / Tab / Escape, группировку и сохранение текста инструмента.
+Пройдены 81 тест и syntax check, Wrangler dry-run (40 assets). В браузере проверены памятка без генератора (16 цветов / 6 стилей с reset), реальное копирование с последующей вставкой, Dark по умолчанию / Light, сохранение режима и акцента после reload, анимация иконки / быстрые переключения / Enter / Escape. В Builder сохранены draft / список файлов и кастомный светлый popup. На 320px нет переполнения страницы, таблицы прокручиваются внутри; консоль чистая, title MCStuff. Предыдущие проверки сетевых функций и ZIP отмечены в соответствующих разделах / changelog.
 
 Переносимая сборка — исходники public и worker, документация, MIT и корневой конфиг с сохранённой структурой MCStuff. Один статический public не обеспечивает сетевые Checkers. Git-метаданные, зависимости, кэши и секреты в архив не включать. Подготовка архива не является публикацией.
 

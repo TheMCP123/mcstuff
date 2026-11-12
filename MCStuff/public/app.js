@@ -22,6 +22,8 @@ const pages = {
 const sounds = {
   accent: { type: 'sine', start: 760, end: 580, volume: 0.025, duration: 0.07 },
   category: { type: 'triangle', start: 440, end: 300, volume: 0.025, duration: 0.05 },
+  light: { type: 'sine', start: 540, end: 810, volume: 0.025, duration: 0.08 },
+  dark: { type: 'sine', start: 690, end: 460, volume: 0.025, duration: 0.08 },
 };
 
 const root = document.documentElement;
@@ -34,11 +36,14 @@ const navLinks = [...navigation.querySelectorAll('.nav-link')];
 const homeLinks = [...document.querySelectorAll('[data-home-link]')];
 const themeButtons = [...document.querySelectorAll('[data-theme-option]')];
 const themeNames = new Set(themeButtons.map(button => button.dataset.themeOption));
+const appearanceButtons = [...document.querySelectorAll('[data-appearance-option]')];
 const menuToggle = document.querySelector('#menu-toggle');
 const scrim = document.querySelector('#scrim');
 const mobileQuery = window.matchMedia('(max-width: 760px)');
 let currentPage = null;
 let selectedTheme = null;
+let selectedAppearance = root.dataset.appearance === 'light' ? 'light' : 'dark';
+let appearanceTransition;
 let audioContext = null;
 let soundRequest = 0;
 let disposePage = () => {};
@@ -70,6 +75,7 @@ function setMenu(open, restoreFocus = false) {
 }
 
 function showPage(page) {
+  appearanceTransition?.skipTransition();
   hideControlTooltip();
   disposePage();
   disposePage = () => {};
@@ -174,7 +180,43 @@ function selectTheme(button) {
   void playSound(sounds.accent);
 }
 
+function applyAppearance(appearance, persist = true) {
+  root.dataset.appearance = appearance;
+  appearanceButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.appearanceOption === appearance)));
+  document.querySelector('meta[name="theme-color"]').content = appearance === 'light' ? '#f6f7f9' : '#101113';
+  if (persist) {
+    try { localStorage.setItem('mcstuff-appearance', appearance); } catch {}
+  }
+}
+
+function selectAppearance(button) {
+  const appearance = button.dataset.appearanceOption;
+  if (appearance === selectedAppearance) return;
+  selectedAppearance = appearance;
+  hideControlTooltip();
+  void playSound(sounds[appearance]);
+  appearanceTransition?.skipTransition();
+  const animateIcon = () => {
+    if (selectedAppearance !== appearance) return;
+    for (const control of appearanceButtons) control.querySelector('.icon')?.getAnimations().forEach(animation => animation.cancel());
+    button.querySelector('.icon')?.animate([
+      { transform: `rotate(${appearance === 'light' ? '-100deg' : '35deg'}) scale(.65)`, opacity: .45 },
+      { transform: 'rotate(0deg) scale(1)', opacity: 1 },
+    ], { duration: 440, easing: 'cubic-bezier(.2,.8,.25,1)' });
+  };
+  if (typeof document.startViewTransition === 'function') {
+    try {
+      appearanceTransition = document.startViewTransition(() => applyAppearance(selectedAppearance));
+      appearanceTransition.ready.then(animateIcon).catch(() => {});
+      return;
+    } catch {}
+  }
+  applyAppearance(appearance);
+  animateIcon();
+}
+
 themeButtons.forEach(button => button.addEventListener('click', () => selectTheme(button)));
+appearanceButtons.forEach(button => button.addEventListener('click', () => selectAppearance(button)));
 menuToggle.addEventListener('click', () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true', true));
 scrim.addEventListener('click', () => setMenu(false, true));
 document.querySelector('.skip-link').addEventListener('click', event => {
@@ -211,4 +253,5 @@ document.addEventListener('click', event => {
 setupToolSearch({ setMenu, mobileQuery, main, syncIndicator });
 
 applyTheme(root.dataset.theme, false);
+applyAppearance(selectedAppearance, false);
 render();
