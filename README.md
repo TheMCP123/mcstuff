@@ -10,7 +10,7 @@ Colors & Formatting — памятка по 16 цветам Minecraft, стил�
 
 Иконки — готовый Lucide. Skin Stealer имеет 3D-превью с вращением; Waypoint Color использует оригинальные текстуры шкалы и четырёх меток Minecraft Java с сохранением авторства / provenance. Lookup использует официальные endpoints и проверенный резерв PlayerDB. В IGN официальное подтверждение, исторический кэш и отсутствие подтверждённой записи различаются; резервный ответ не выдаётся за гарантированно свободный ник.
 
-В General работают Pack Builder и Colors & Formatting. В Checkers работают Skin Stealer (текущий скин / PNG), Waypoint Color (цвет Locator Bar по нику / UUID) и IGN Availability (проверка регистрации ника). Отсутствие профиля не гарантирует возможность занять ник. Поиск сохраняет группировку и временно скрывает пустые категории.
+В General работают Pack Builder и Colors & Formatting. В Checkers работают Skin Stealer (текущий скин / PNG), Waypoint Color (цвет Locator Bar по нику / UUID) и IGN Availability (проверка регистрации ника). Отсутствие профиля не гарантирует возможность занять ник. В Base Finding добавлен Bedrock Leak (`#bedrock`): сетка 10 × 10 с Bedrock / Other / Unknown, default Y=-61, известный seed и поиск в заданном радиусе до 8192 блоков, повороты / прогресс / Stop / копирование координат. Поддержка — неизменённый vanilla Overworld Java 1.21.11 / 26.3; полного перебора мира и Bedrock Edition нет. Расчёт локальный через Worker / WASM, seed не отправляется на сервер. Поиск меню сохраняет группировку и временно скрывает пустые категории.
 
 Название MCStuff в боковой панели и мобильной шапке целиком Bold.
 
@@ -20,14 +20,14 @@ Colors & Formatting — памятка по 16 цветам Minecraft, стил�
 
 ## Локальный запуск
 
-Нужен Node.js 22 или новее. Установка зависимостей не требуется.
+Нужен Node.js 22 или новее. Для preview установка зависимостей не требуется: готовый WASM включён в проект.
 
 ```powershell
 cd MCStuff
 npm run dev
 ```
 
-Локальный адрес: `http://127.0.0.1:4173` (Pack Builder: #builder). Проверка JavaScript: `npm run check`, тесты: `npm test`. Optional CurseForge key — CURSEFORGE_API_KEY в root .dev.vars / Worker secret; реальный ключ никогда не коммитить. Экспорт ZIP сохраняет исходные файлы по папкам, ошибки / ручные скачивания отмечены; limits v1 — 50 projects / 64MB per file / 128MB ZIP.
+Локальный адрес: `http://127.0.0.1:4173` (Pack Builder: #builder; Bedrock Leak: #bedrock). Проверка JavaScript: `npm run check`. Перед тестами / пересборкой движка — `npm ci` (закреплённые devDependencies WABT / Happy DOM), затем `npm test`; после изменения WAT — `npm run build:bedrock`. Для deploy сборка не требуется. Optional CurseForge key — CURSEFORGE_API_KEY в root .dev.vars / Worker secret; реальный ключ никогда не коммитить. Экспорт ZIP сохраняет исходные файлы по папкам, ошибки / ручные скачивания отмечены; limits v1 — 50 projects / 64MB per file / 128MB ZIP.
 
 ## Cloudflare Workers
 

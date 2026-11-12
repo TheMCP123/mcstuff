@@ -5,11 +5,18 @@
   "private": true,
   "type": "module",
   "description": "MCStuff — Minecraft packs, resources, and tools.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "check": "node --check public/app.js && node --check public/control-data.js && node --check public/form-controls.js && node --check public/formatting.js && node --check public/colors-tool.js && node --check public/tool-catalog.js && node --check public/tool-search.js && node --check public/checker-data.js && node --check public/checkers.js && node --check public/ign-data.js && node --check public/ign-tool.js && node --check public/icons.js && node --check public/skin-preview.js && node --check public/pack-data.js && node --check public/pack-zip.js && node --check public/pack-export.js && node --check public/pack-builder.js && node --check worker/index.js && node --check worker/pack-api.js && node --check scripts/dev.mjs",
+    "check": "node --check public/app.js && node --check public/bedrock-data.js && node --check public/bedrock-tool.js && node --check public/bedrock-worker.js && node --check scripts/build-bedrock.mjs && node --check public/control-data.js && node --check public/form-controls.js && node --check public/formatting.js && node --check public/colors-tool.js && node --check public/tool-catalog.js && node --check public/tool-search.js && node --check public/checker-data.js && node --check public/checkers.js && node --check public/ign-data.js && node --check public/ign-tool.js && node --check public/icons.js && node --check public/skin-preview.js && node --check public/pack-data.js && node --check public/pack-zip.js && node --check public/pack-export.js && node --check public/pack-builder.js && node --check worker/index.js && node --check worker/pack-api.js && node --check scripts/dev.mjs",
     "test": "node --test",
+    "build:bedrock": "node scripts/build-bedrock.mjs",
     "deploy": "npx wrangler@4.156.1 deploy --config ../wrangler.jsonc"
+  },
+  "devDependencies": {
+    "happy-dom": "21.0.4",
+    "wabt": "1.0.39"
   }
 }

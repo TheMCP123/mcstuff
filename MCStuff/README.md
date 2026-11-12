@@ -1,16 +1,17 @@
 # MCStuff
 
-Рабочее пространство Minecraft с Colors & Formatting, тремя Checkers и рабочим Pack Builder через Modrinth / Spiget. Сайт полностью на английском; общение с владельцем и документация — на русском.
+Рабочее пространство Minecraft с Colors & Formatting, тремя Checkers, Pack Builder через Modrinth / Spiget и Bedrock Leak. Сайт полностью на английском; общение с владельцем и документация — на русском.
 
 ## Текущее состояние
 
 - Главная MCStuff со ссылкой на рабочий инструмент.
 - Colors & Formatting (`#colors`) — памятка по цветам / кодам / форматированию с копированием примеров.
 - Pack Builder (`#builder`) — рабочий сборщик Plugins / Mods / Resource packs / Data packs: поиск Modrinth / SpigotMC через Spiget, автоматические обязательные зависимости, выбор файлов, отдельные загрузки и ZIP. CurseForge adapter подготовлен, нужен серверный ключ.
-- В sidebar две категории: General с Pack Builder / Colors & Formatting и Checkers со Skin Stealer (`#skin`), Waypoint Color (`#waypoint`), IGN Availability (`#ign`). Категории — заголовки групп, инструменты — отдельные страницы.
+- В sidebar три категории: General с Pack Builder / Colors & Formatting; Checkers со Skin Stealer (`#skin`), Waypoint Color (`#waypoint`), IGN Availability (`#ign`); Base Finding с Bedrock Leak (`#bedrock`). Категории — заголовки групп, инструменты — отдельные страницы.
+- Bedrock Leak — поиск координат по известному seed и горизонтальному рисунку bedrock 10 × 10 в заданном радиусе.
 - Поиск прямо в sidebar: ввод фильтрует существующее меню, подходящие пункты плавно перемещаются / появляются. Отдельного окна и дублирующей выдачи нет; открытый инструмент не меняется до выбора.
 
-Поиск учитывает названия и функции / синонимы, категорию, регистр / Unicode / пунктуацию, аббревиатуры CF / PB, русские запросы, английский ввод в русской раскладке, пропущенные / лишние / заменённые / переставленные буквы. Примеры: `colour codes`, `minimessgae`, `сборка`, `сщдщкы`. Все значимые слова должны совпасть; точные названия и слова названий выше aliases и приблизительных совпадений. Результаты остаются в своих категориях и ранжируются внутри группы. Пустые группы скрываются на время поиска; при очистке возвращаются обе категории и исходный порядок инструментов. Это локальный детерминированный поиск, без нейросетевого API и отправки запросов в сеть; лимит — 120 символов.
+Поиск учитывает названия и функции / синонимы, категорию, регистр / Unicode / пунктуацию, аббревиатуры CF / PB, русские запросы, английский ввод в русской раскладке, пропущенные / лишние / заменённые / переставленные буквы. Примеры: `colour codes`, `minimessgae`, `сборка`, `сщдщкы`, `base finding`, `бедрок`. Все значимые слова должны совпасть; точные названия и слова названий выше aliases и приблизительных совпадений. Результаты остаются в своих категориях и ранжируются внутри группы. Пустые группы скрываются на время поиска; при очистке возвращаются все категории и исходный порядок инструментов. Это локальный детерминированный поиск, без нейросетевого API и отправки запросов в сеть; лимит — 120 символов.
 
 По последнему требованию глобальная горячая клавиша поиска и её подсказка удалены; Ctrl/Cmd+K сайт не перехватывает. Строка доступна кликом / обычным Tab. Стрелки переводят фокус на видимые пункты, Enter в строке открывает лучший результат. Escape сначала очищает запрос, затем возвращает фокус в main / закрывает мобильное меню. Кнопка Clear search очищает строку; при отсутствии результатов — короткое No tools found. Мобильная кнопка Search tools открывает тот же sidebar с фокусом в input. Запрос сохраняется при переходе между инструментами, reload его сбрасывает; скрытые ссылки не входят в Tab-цикл. Иконки инструментов — локальные контурные SVG: коробка у Pack Builder, художественная палитра у Colors & Formatting.
 
@@ -34,13 +35,25 @@ Modern: по умолчанию Dark (#101113 / #151619), дополнитель
 
 Основные источники: [MiniMessage format](https://docs.papermc.io/adventure/minimessage/format/) и [Legacy serializer](https://docs.papermc.io/adventure/serializer/legacy/).
 
+## Bedrock Leak v1
+
+Base Finding → Bedrock Leak (`#bedrock`). Горизонтальная сетка 10 × 10: Bedrock / Other / Unknown, кисть с протягиванием, Fill other, Clear pattern и управление клавиатурой. Unknown не участвует в сравнении; Other означает, что на этой высоте bedrock отсутствует. Нужно минимум 8 известных клеток; больше известных клеток уменьшает количество случайных совпадений. По умолчанию Y=-61 — третий блок над сплошным нижним слоем Y=-64; доступны Y=-63, -62, -61, -60.
+
+Поддержка подтверждена для неизменённого vanilla Overworld **Java 1.21.11 / 26.3**. Это не поиск для Bedrock Edition / Nether, изменённых генераторов или старого retrogen. Числовой seed читается как signed 64-bit BigInt без потери точности. Движок воспроизводит named positional factory `minecraft:bedrock_floor`, Java int / long overflow и Xoroshiro128++ / strict nextFloat threshold, затем сравнивает все известные клетки. Четыре поворота включены по умолчанию; одинаковые симметричные ориентации не дублируются. X/Z результата — северо-западный угол всей области 10 × 10, Y — выбранный слой, угол — поворот по часовой стрелке от введённой сетки.
+
+Поиск ограничен квадратом Center X/Z ± Radius, радиус 0…8192 блоков, по умолчанию 512. Полный перебор мира не реализован; отсутствие совпадений означает только отсутствие в проверенной области. Все вычисления идут локально в module Worker / WASM: прогресс, число проверенных позиций, время, Stop и копирование реальных координат. При 100 совпадениях поиск останавливается с явным сообщением о лимите. Seed / сетка / результаты хранятся в памяти, не отправляются на сервер и не сохраняются в localStorage. Уход завершает Worker, редактирование очищает устаревшие результаты. При недоступном Clipboard API выделяются только координаты для ручного копирования.
+
+Собственная реализация MCStuff, без заимствования GPL-кода. Эталонные фикстуры `tests/fixtures/bedrock-1.21.11.json` и `bedrock-26.3.json` получены через реальные vanilla RNG: 504 отсчёта, 14 сеток, отрицательные / переполняющие координаты и границы 64-bit seed. Правила Overworld / пороги отдельно сверены с конфигурацией и классами этих серверов. Это проверка генератора случайных значений и material rules, не тест полной генерации чанка в игре.
+
+Опциональный helper `scripts/reference/BedrockReference.java` запускается JDK 25 с официальным серверным JAR / его библиотеками в classpath; аргументы — выходной JSON и `mapped` только для 26.3 (для 1.21.11 без второго аргумента). SHA-1 официальных серверов: 1.21.11 `64bb6d763bed0a9f1d632ec347938594144943ed`, 26.3 `33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c`. Игровые JAR / библиотеки не входят в проект; локальный reference cache остаётся в ignored `.wrangler/bedrock-reference/`.
+
 ## Технологии и файлы
 
 Выбор версий в Builder использует общие кастомные контролы вместо OS popup. Общий компонент выбора цвета сохранён, но на странице Colors не отображается. Длинные списки имеют поиск; доступны клавиатура / ARIA, HSV plane / sliders / HEX, закрытие по Escape / клику снаружи и очистка при уходе. Checkbox, progress, scrollbars, раскрывающиеся блоки и подсказки поддерживают Dark / Light. В Pack Builder увеличены кнопки, выровнены фильтры / карточки, список файлов прокручивается отдельно от Download; на мобильном Your pack свёрнут, ошибки раскрывают панель. Переход между инструментами мгновенно возвращает страницу наверх.
 
-Frontend — buildless HTML / CSS / JavaScript ES modules. Для публичных Mojang lookup / PNG добавлен Cloudflare Worker ES module; same-origin API решает CORS и не требует токенов. npm-зависимостей и фреймворка нет. Node.js 22+ для локального сервера / проверок; проверено на Node.js 24.16.0, npm 11.13.0.
+Frontend — buildless HTML / CSS / JavaScript ES modules и готовый WASM Bedrock Leak. Для публичных Mojang lookup / PNG добавлен Cloudflare Worker ES module; same-origin API решает CORS и не требует токенов. Runtime npm-зависимостей и фреймворка нет. Только devDependencies: WABT 1.0.39 для воспроизводимой сборки WASM, Happy DOM 21.0.4 для DOM-тестов; версии и package-lock.json закреплены. Node.js 22+ для локального сервера / проверок; проверено на Node.js 24.16.0, npm 11.13.0.
 
-- `public/index.html` — каркас, меню с группами General / Checkers, 5 акцентов, inline-строка поиска, раннее восстановление preset.
+- `public/index.html` — каркас, меню General / Checkers / Base Finding, 5 акцентов, inline-строка поиска, раннее восстановление preset.
 - `public/styles.css` — Dark / Light Modern, адаптивность от 320 px, стили инструмента и анимации поиска / меню.
 - `public/form-controls.js`, `form-controls.css` — общие select / color picker, tooltips / disclosure и оформление полей; MutationObserver отслеживает динамические варианты, dispose освобождает popup / обработчики. `refreshFormControls(host)` синхронизирует программные value / disabled.
 - `public/control-data.js`, `tests/control-data.test.mjs` — HSV / HEX, фильтрация вариантов, клавиатурная навигация и позиционирование в viewport; пять тестов.
@@ -50,6 +63,9 @@ Frontend — buildless HTML / CSS / JavaScript ES modules. Для публичн
 - `public/checker-data.js` — общая валидация имени / UUID и точный Java hash / HSV цвет Waypoint.
 - `public/checkers.js` — Skin / Waypoint UI, запросы / отмена / состояние, 3D / Locator Bar preview и копирование.
 - `public/ign-tool.js`, `public/ign-data.js` — Single / Bulk IGN, валидация, очередь, отмена / 429, TSV и переход к скину.
+- `public/bedrock-tool.js`, `bedrock-data.js`, `bedrock-worker.js` — редактор сетки, валидация / seed / повороты, фоновый поиск / прогресс / остановка.
+- `engine/bedrock.wat`, `public/bedrock-engine.wasm`, `scripts/build-bedrock.mjs` — собственный точный matcher и его готовый артефакт; WASM хранится в Git, обычный deploy не требует компиляции.
+- `tests/bedrock-*.test.mjs`, `tests/fixtures/`, `scripts/bedrock-test-worker.mjs`, `scripts/reference/BedrockReference.java` — vanilla-векторы, реальный Worker через Node adapter, редактор / результаты / clipboard и опциональный генератор фикстур.
 - `public/textures/minecraft/` — оригинальные Locator Bar PNG, nine-slice metadata и NOTICE с provenance / hashes.
 - `public/skin-preview.js` — ленивое 3D-превью, вращение / Front / Back / Reset, resize, остановка и освобождение рендера, 2D fallback.
 - `public/icons.js`, `public/icons/lucide.svg` — готовые оригинальные Lucide 1.70.0 SVG; лицензия ISC / Feather MIT рядом.
@@ -62,11 +78,11 @@ Frontend — buildless HTML / CSS / JavaScript ES modules. Для публичн
 - `public/tool-search.js` — фильтрация / сортировка внутри групп меню, скрытие / восстановление пустых категорий, анимации перемещения / появления, очистка, клавиатура и фокус, синхронизация навигационной подсветки.
 - `public/favicon.svg` — знак с зелёным акцентом.
 - `scripts/dev.mjs` — локальный HTTP-сервер на loopback, порт 4173 / env PORT.
-- `tests/*.test.mjs` — тесты форматирования и поиска на встроенном Node test runner.
+- `tests/*.test.mjs` — тесты форматирования, поиска, API / Builder и Bedrock Leak на встроенном Node test runner; DOM-тесты используют Happy DOM.
 - `../wrangler.jsonc` — единственный конфиг: Worker main `./MCStuff/worker/index.js`, assets `./MCStuff/public`, ASSETS binding, SPA fallback, `/api` / `/api/*` через Worker first; имя mcstuff, compatibility date 2026-11-01.
 - `../LICENSE` — MIT, Copyright (c) 2026 MCP.
 
-Внешний шрифт Golos Text — Google Fonts, при недоступности используется системный. Иконка Discord встроена в HTML ([Simple Icons](https://github.com/simple-icons/simple-icons/blob/develop/icons/discord.svg)); остальные UI icons — [Lucide 1.70.0](https://github.com/lucide-icons/lucide/tree/1.70.0/icons), оригинальные пути без ручной перерисовки. [skinview3d 3.4.2](https://github.com/bs-community/skinview3d/tree/v3.4.2) взят из официального npm bundle с проверкой SHA-512 пакета. Генератор / поиск внешних API не вызывают.
+Внешний шрифт Golos Text — Google Fonts, при недоступности используется системный. Иконка Discord встроена в HTML ([Simple Icons](https://github.com/simple-icons/simple-icons/blob/develop/icons/discord.svg)); остальные UI icons — [Lucide 1.70.0](https://github.com/lucide-icons/lucide/tree/1.70.0/icons), оригинальные пути без ручной перерисовки; Bedrock Leak использует scan-search. [skinview3d 3.4.2](https://github.com/bs-community/skinview3d/tree/v3.4.2) взят из официального npm bundle с проверкой SHA-512 пакета. Форматирование / поиск меню / Bedrock Leak внешних API не вызывают.
 
 ## Локальная работа и проверка
 
@@ -83,14 +99,18 @@ API: GET / HEAD `/api/player/:nameOrUuid` (профиль и скин), `/api/uu
 ```powershell
 npm run dev
 npm run check
+npm ci
 npm test
+npm run build:bedrock
 ```
 
-Адрес: `http://127.0.0.1:4173`. Установка зависимостей и компиляция не нужны. Из корня репозитория подготовка без публикации: `npx wrangler@4.156.1 deploy --dry-run`.
+Адрес: `http://127.0.0.1:4173`. Для preview и deploy установка зависимостей / сборка не нужны: готовый WASM включён в public. `npm ci` нужен перед тестами / пересборкой WASM. `npm run build:bedrock` выполнять после изменения WAT; тест сравнивает результат компиляции с включённым бинарным файлом. Из корня репозитория подготовка без публикации: `npx wrangler@4.156.1 deploy --dry-run`.
 
 Проверка настоящего Cloudflare runtime из корня: `npx wrangler@4.156.1 dev --local --port 4174 --ip 127.0.0.1`. Node preview вызывает общий handleApi; одна его проверка не заменяет workerd. Пройдены реальные HTTP lookup в workerd: профиль / UUID, занятый и незарегистрированный ник, API 404 и static assets 200. Скачанный через браузер Notch.png (64×32, 526 байт) совпал с оригинальным Mojang texture hash SHA-256. Тесты покрывают 8 Java color vectors, validation, API / 429 / redirects / malformed responses, allowlist, PNG и маршрутизацию.
 
-Пройдены 81 тест и syntax check, Wrangler dry-run (40 assets). В браузере проверены памятка без генератора (16 цветов / 6 стилей с reset), реальное копирование с последующей вставкой, Dark по умолчанию / Light, сохранение режима и акцента после reload, анимация иконки / быстрые переключения / Enter / Escape. В Builder сохранены draft / список файлов и кастомный светлый popup. На 320px нет переполнения страницы, таблицы прокручиваются внутри; консоль чистая, title MCStuff. Предыдущие проверки сетевых функций и ZIP отмечены в соответствующих разделах / changelog.
+Для Bedrock Leak пройдены 98 тестов и syntax check: vanilla-векторы, точный поиск сеток, повороты / Unknown / Other / границы, соответствие WASM исходнику, реальный Worker, DOM-редактор / результаты / точное содержимое копирования и fallback, Stop / уход. DOM не доказывает визуальную корректность desktop / mobile; новая нативная визуальная проверка в этой среде недоступна. Предыдущая браузерная проверка памятки, тем и Builder, сетевых функций и ZIP относится к прежним изменениям и отмечена в changelog; не считать её проверкой новой страницы Bedrock Leak.
+
+Wrangler 4.156.1 dry-run подготовил Worker и 44 assets; локальные HTTP-проверки подтвердили новые модули / WASM 200, правильный MIME и совпадение байтов движка. Публикация Bedrock Leak разрешена отдельной командой владельца. Успешные локальные проверки не заменяют проверку Workers Builds текущего commit и опубликованных файлов.
 
 Переносимая сборка — исходники public и worker, документация, MIT и корневой конфиг с сохранённой структурой MCStuff. Один статический public не обеспечивает сетевые Checkers. Git-метаданные, зависимости, кэши и секреты в архив не включать. Подготовка архива не является публикацией.
 
@@ -112,7 +132,7 @@ npm test
 
 ## Дальше
 
-Первая версия Pack Builder реализована. Следующие изменения — по обратной связи пользователя; не добавлять обещания будущих функций в интерфейс.
+Первые версии Pack Builder и Bedrock Leak реализованы. Следующие изменения — по обратной связи пользователя; не добавлять обещания будущих функций в интерфейс. Глобальный поиск bedrock за пределами выбранной области требует отдельного вычислительного решения.
 
 Проект распространяется под MIT; внешние материалы сохраняют свои условия. Подробная история решений — CHANGELOG.md, постоянные требования — AGENTS.md.
 

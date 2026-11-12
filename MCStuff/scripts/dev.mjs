@@ -7,7 +7,7 @@ import { handleApi } from '../worker/index.js';
 const root = fileURLToPath(new URL('../public/', import.meta.url));
 try { process.loadEnvFile(fileURLToPath(new URL('../../.dev.vars', import.meta.url))); } catch (error) { if (error.code !== 'ENOENT') throw error; }
 const port = Number(process.env.PORT || 4173);
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.wasm': 'application/wasm', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
 
 const server = createServer(async (request, response) => {
   try {

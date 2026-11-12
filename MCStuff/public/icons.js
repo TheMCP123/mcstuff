@@ -4,6 +4,7 @@ const names = {
   namecheck: 'user-round-check', menu: 'menu', search: 'search', close: 'x', reset: 'rotate-ccw',
   chevron: 'chevron-down', check: 'check', add: 'plus', download: 'download',
   sun: 'sun', moon: 'moon',
+  bedrock: 'scan-search',
 };
 
 export function iconMarkup(name) {

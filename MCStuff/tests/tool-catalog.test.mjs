@@ -8,7 +8,7 @@ test('search matches tool names, format aliases and multiple words', () => {
 });
 
 test('search returns actual registered tools and handles empty or unknown queries', () => {
-  assert.deepEqual(searchTools('  ').map(tool => tool.id), ['colors', 'builder', 'skin', 'waypoint', 'ign']);
+  assert.deepEqual(searchTools('  ').map(tool => tool.id), ['colors', 'builder', 'skin', 'waypoint', 'ign', 'bedrock']);
   assert.deepEqual(searchTools('not-a-real-tool'), []);
   assert.deepEqual(searchTools('<script>'), []);
 });
@@ -45,8 +45,8 @@ test('search ranks exact titles before title words, aliases and approximate matc
 
 test('search rejects unrelated terms, punctuation and overly short fuzzy matches', () => {
   for (const query of ['???', 'zz', 'zzz', 'weather', 'legacy weather', 'pack formatting', 'x'.repeat(500)]) assert.deepEqual(searchTools(query), [], query);
-  assert.deepEqual(searchTools('le').map(tool => tool.id), ['colors']);
-  assert.deepEqual(searchTools('pa').map(tool => tool.id), ['builder', 'colors']);
+  assert.deepEqual(searchTools('le').map(tool => tool.id), ['bedrock', 'colors']);
+  assert.deepEqual(searchTools('pa').map(tool => tool.id), ['builder', 'colors', 'bedrock']);
 });
 
 test('search is deterministic and leaves the catalog in its original order', () => {
@@ -64,4 +64,8 @@ test('the new checkers are searchable by purpose and category', () => {
   assert.equal(searchTools('locator bar')[0]?.id, 'waypoint');
   assert.equal(searchTools('name availability')[0]?.id, 'ign');
   assert.deepEqual(searchTools('general').map(tool => tool.id), ['colors', 'builder']);
+});
+
+test('Base Finding finds Bedrock Leak by category, pattern and Russian aliases',()=>{
+  for(const query of ['base finding','basefinding','bedrock leak','bedrock pattern','бедрок','координаты сид'])assert.deepEqual(searchTools(query).map(tool=>tool.id),['bedrock'],query);
 });

@@ -3,6 +3,7 @@ import { mountColorsTool } from './colors-tool.js';
 import { setupToolSearch } from './tool-search.js';
 import { mountChecker } from './checkers.js';
 import { mountPackBuilder } from './pack-builder.js';
+import { mountBedrockTool } from './bedrock-tool.js';
 import { enhanceFormControls, installControlTooltips, hideControlTooltip } from './form-controls.js';
 
 installControlTooltips();
@@ -17,6 +18,7 @@ const pages = {
   skin: { title: 'Skin Stealer' },
   waypoint: { title: 'Waypoint Color' },
   ign: { title: 'IGN Availability' },
+  bedrock: { title: 'Bedrock Leak' },
 };
 
 const sounds = {
@@ -102,6 +104,7 @@ function showPage(page) {
   stage.replaceChildren(view);
   if (page === 'colors') disposePage = mountColorsTool(view);
   if (page === 'builder') disposePage = mountPackBuilder(view);
+  if (page === 'bedrock') disposePage = mountBedrockTool(view);
   if (['skin', 'waypoint', 'ign'].includes(page)) disposePage = mountChecker(view, page);
   const disposeTool = disposePage;
   const disposeControls = enhanceFormControls(view);
