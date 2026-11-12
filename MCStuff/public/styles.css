@@ -97,7 +97,6 @@
   --swatch-border: #00000026;
   --popup-shadow: #1723341f;
   --action-hover: #39414d;
-  --accent-text: color-mix(in srgb, var(--accent) 50%, #111820);
 }
 
 ::view-transition { pointer-events: none; }
@@ -136,11 +135,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .sidebar-footer { display: flex; flex-shrink: 0; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 28px; }
 .sidebar-footer-row { display: flex; align-items: center; gap: 8px; width: 100%; }
 .appearance-picker { display: flex; align-items: center; gap: 4px; }
-.appearance-button { display: grid; place-items: center; width: 36px; height: 34px; padding: 0; border-radius: 6px; background: transparent; color: var(--muted); }
-.appearance-button .icon { width: 18px; height: 18px; transition: transform 180ms ease; }
+.appearance-button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border-radius: 5px; background: transparent; color: var(--muted); }
+.appearance-button .icon { width: 16px; height: 16px; stroke-width: 1.75; }
 .appearance-button:hover { background: var(--hover); color: var(--text); }
-.appearance-button[data-appearance-option='light']:hover .icon { transform: rotate(25deg); }
-.appearance-button[data-appearance-option='dark']:hover .icon { transform: rotate(-15deg); }
 .appearance-button[aria-pressed='true'] { color: var(--text); background: var(--selected); }
 .appearance-button:focus-visible { outline: 1px solid var(--focus); outline-offset: 3px; }
 .theme-picker { display: flex; flex-shrink: 0; align-items: center; justify-content: flex-start; gap: 2px; }
