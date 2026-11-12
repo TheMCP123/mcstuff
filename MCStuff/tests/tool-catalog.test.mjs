@@ -45,8 +45,8 @@ test('search ranks exact titles before title words, aliases and approximate matc
 
 test('search rejects unrelated terms, punctuation and overly short fuzzy matches', () => {
   for (const query of ['???', 'zz', 'zzz', 'weather', 'legacy weather', 'pack formatting', 'x'.repeat(500)]) assert.deepEqual(searchTools(query), [], query);
-  assert.deepEqual(searchTools('le').map(tool => tool.id), ['bedrock', 'colors']);
-  assert.deepEqual(searchTools('pa').map(tool => tool.id), ['builder', 'colors', 'bedrock']);
+  assert.deepEqual(searchTools('le').map(tool => tool.id), ['colors', 'bedrock']);
+  assert.deepEqual(searchTools('pa').map(tool => tool.id), ['builder', 'bedrock', 'colors']);
 });
 
 test('search is deterministic and leaves the catalog in its original order', () => {
@@ -66,6 +66,6 @@ test('the new checkers are searchable by purpose and category', () => {
   assert.deepEqual(searchTools('general').map(tool => tool.id), ['colors', 'builder']);
 });
 
-test('Base Finding finds Bedrock Leak by category, pattern and Russian aliases',()=>{
+test('Base Finding finds Bedrock Pattern by category, pattern and Russian aliases',()=>{
   for(const query of ['base finding','basefinding','bedrock leak','bedrock pattern','бедрок','координаты сид'])assert.deepEqual(searchTools(query).map(tool=>tool.id),['bedrock'],query);
 });

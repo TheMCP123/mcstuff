@@ -4,7 +4,7 @@ export const TOOL_CATALOG = [
   { id: 'skin', title: 'Skin Stealer', category: 'checkers', detail: 'Public Java skins · PNG download', keywords: 'skin skins stealer texture png download player username uuid скин скины скачать игрок' },
   { id: 'waypoint', title: 'Waypoint Color', category: 'checkers', detail: 'Java Locator Bar marker color', keywords: 'waypoint locator marker color colour uuid player цвет метка локатор' },
   { id: 'ign', title: 'IGN Availability', category: 'checkers', detail: 'Java username registration check', keywords: 'ign availability available name names username usernames nickname registration taken registered check bulk batch multiple ник ники имя занят свободен массовая пакетная' },
-  { id: 'bedrock', title: 'Bedrock Leak', category: 'base finding', detail: 'Coordinates from a bedrock pattern and world seed', keywords: 'bedrock leak base finding basefinding coordinates coords position locate locator world seed pattern grid overworld vanilla java orientation rotations wasm бедрок бэдрок сид координаты координат база базы поиск узор сетка' },
+  { id: 'bedrock', title: 'Bedrock Pattern', category: 'base finding', detail: 'Coordinates from a bedrock pattern and world seed', keywords: 'bedrock leak base finding basefinding coordinates coords position locate locator world seed pattern grid overworld vanilla java orientation rotations wasm бедрок бэдрок сид координаты координат база базы поиск узор сетка' },
 ];
 
 const ignoredWords = new Set('a an the and for to of with in on find search tool tools how и для по на с из как найти инструмент инструменты'.split(' '));

@@ -18,7 +18,7 @@ const pages = {
   skin: { title: 'Skin Stealer' },
   waypoint: { title: 'Waypoint Color' },
   ign: { title: 'IGN Availability' },
-  bedrock: { title: 'Bedrock Leak' },
+  bedrock: { title: 'Bedrock Pattern' },
 };
 
 const sounds = {
